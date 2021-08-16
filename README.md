@@ -1,6 +1,6 @@
 # NGenius Magento Plugin
 
-![Banner](assets/banner.jpg)
+![Banner](assets/banner.jpeg)
 
 ## Installation
 
