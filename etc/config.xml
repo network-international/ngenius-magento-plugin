@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <ngeniusonline>
+                <active>0</active>
+                <title>n-genius Payment Gateway</title>
+                <model>NGeniusFacade</model>
+                <payment_action>authorize</payment_action>
+                <environment>uat</environment>
+                <is_gateway>1</is_gateway>
+                <can_use_checkout>1</can_use_checkout>
+                <can_authorize>1</can_authorize>
+                <can_capture>1</can_capture>
+                <can_capture_partial>1</can_capture_partial>
+                <can_use_internal>1</can_use_internal>
+                <can_refund>1</can_refund>
+                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                <can_void>1</can_void>
+                <can_cancel>1</can_cancel>
+                <can_edit>1</can_edit>
+                <order_status>ngenius_pending</order_status>
+                <allowspecific>0</allowspecific>
+                <uat_identity_url><![CDATA[https://identity-uat.ngenius-payments.com]]></uat_identity_url>
+                <live_identity_url><![CDATA[https://identity.ngenius-payments.com]]></live_identity_url>
+                <uat_api_url><![CDATA[https://api-gateway-uat.ngenius-payments.com]]></uat_api_url>
+                <live_api_url><![CDATA[https://api-gateway.ngenius-payments.com]]></live_api_url>
+                <token_endpoint><![CDATA[/auth/realms/%s/protocol/openid-connect/token]]></token_endpoint>
+                <order_endpoint><![CDATA[/transactions/outlets/%s/orders]]></order_endpoint>
+                <fetch_endpoint><![CDATA[/transactions/outlets/%s/orders/%s]]></fetch_endpoint>
+                <capture_endpoint><![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/captures]]></capture_endpoint>
+                <void_auth_endpoint><![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/cancel]]></void_auth_endpoint>
+                <refund_endpoint><![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/captures/%s/refund]]></refund_endpoint>
+            </ngeniusonline>
+        </payment>
+    </default>
+</config>
+
