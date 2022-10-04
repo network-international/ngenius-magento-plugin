@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!--
+/*
+ * Copyright (c) 2022 NetworkInternational
+ *
+ * Author: App Inlet (Pty) Ltd
+ *
+ * Released under the GNU General Public License
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="sales_order_payment_refund">
+        <observer name="ngenius_purchase_refund"
+                  instance="NetworkInternational\NGenius\Observer\PurchaseRefund"/>
+    </event>
+    <event name="sales_order_payment_void">
+        <observer name="ngenius_payment_void"
+                  instance="NetworkInternational\NGenius\Observer\PaymentVoid"/>
+    </event>
+    <event name="order_cancel_after">
+        <observer name="ngenius_order_cancel_after"
+                  instance="NetworkInternational\NGenius\Observer\OrderCancelAfter"/>
+    </event>
+</config>
+

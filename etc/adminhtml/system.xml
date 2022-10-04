@@ -2,7 +2,7 @@
     <system>
         <section id="payment">
             <group id="ngeniusonline" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>n-genius: Network International Payment Gateway - 1.0.1</label>
+                <label>N-Genius Online</label>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -13,27 +13,32 @@
                     <config_path>payment/ngeniusonline/title</config_path>
                     <validate>required-entry</validate>
                 </field>
-                <field id="tenant" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0" >
-                    <label>Tenant</label>
-                    <source_model>NetworkInternational\NGenius\Model\Config\Tenant</source_model>
-                    <config_path>payment/ngeniusonline/tenant</config_path>
-                </field>
                 <field id="environment" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0" >
                     <label>Environment</label>
                     <source_model>NetworkInternational\NGenius\Model\Config\Environment</source_model>
                     <config_path>payment/ngeniusonline/environment</config_path>
                 </field>
-                <field id="payment_action" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0" >
+                <field id="uat_api_url" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sandbox API URL</label>
+                    <validate>required-entry</validate>
+                    <config_path>payment/ngeniusonline/uat_api_url</config_path>
+                </field>
+                <field id="live_api_url" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Live API URL</label>
+                    <validate>required-entry</validate>
+                    <config_path>payment/ngeniusonline/live_api_url</config_path>
+                </field>
+                <field id="payment_action" translate="label" type="select" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0" >
                     <label>Payment Action</label>
                     <source_model>NetworkInternational\NGenius\Model\Config\PaymentAction</source_model>
                     <config_path>payment/ngeniusonline/payment_action</config_path>
                 </field>
-                <field id="order_status" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1" >
+                <field id="order_status" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1" >
                     <label>Status of new order</label>
                     <source_model>NetworkInternational\NGenius\Model\Config\OrderStatus</source_model>
                     <config_path>payment/ngeniusonline/order_status</config_path>
                 </field>
-                <field id="outlet_ref" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="outlet_ref" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Outlet Reference ID</label>
                     <config_path>payment/ngeniusonline/outlet_ref</config_path>
                     <validate>required-entry</validate>
@@ -41,7 +46,22 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="api_key" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="outlet_ref_2" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Outlet Reference 2 ID (Optional)</label>
+                    <config_path>payment/ngeniusonline/outlet_ref_2</config_path>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="outlet_ref_2_currencies" translate="label" type="multiselect" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Outlet Reference 2 Currencies (Optional)</label>
+                    <config_path>payment/ngeniusonline/outlet_ref_2_currencies</config_path>
+                    <source_model>NetworkInternational\NGenius\Model\Config\OutletCurrencies</source_model>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="api_key" translate="label" type="text" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>API Key</label>
                     <config_path>payment/ngeniusonline/api_key</config_path>
                     <validate>required-entry</validate>
@@ -49,7 +69,7 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="debug" translate="label" type="select" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="debug" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Debug</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>payment/ngeniusonline/debug</config_path>

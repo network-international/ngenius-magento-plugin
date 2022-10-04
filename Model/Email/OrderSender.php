@@ -9,7 +9,6 @@ use Magento\Sales\Model\Order;
  */
 class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
 {
-
     /**
      * Sends order email to the customer.
      *
@@ -23,11 +22,12 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
      *
      * @param Order $order
      * @param bool $forceSyncMode
+     *
      * @return bool
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function send(Order $order, $forceSyncMode = false)
     {
-
         $paymentCode = $order->getPayment()->getMethodInstance()->getCode();
 
         if ($paymentCode == \NetworkInternational\NGenius\Gateway\Config\Config::CODE && $order->isPaymentReview()) {

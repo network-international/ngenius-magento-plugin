@@ -14,7 +14,6 @@ use Magento\Sales\Model\OrderFactory;
  */
 class VoidValidator extends AbstractValidator
 {
-
     /**
      * @var BuilderInterface
      */
@@ -46,26 +45,43 @@ class VoidValidator extends AbstractValidator
      * Performs validation of result code
      *
      * @param array $validationSubject
-     * @return ResultInterface
+     * @return ResultInterface|null
      */
     public function validate(array $validationSubject)
     {
+        try {
+            if (! empty($validationSubject)) {
+                $response     = SubjectReader::readResponse($validationSubject);
+                $paymentDO    = SubjectReader::readPayment($validationSubject);
+                $orderAdapter = $paymentDO->getOrder();
 
-        $response = SubjectReader::readResponse($validationSubject);
-        $paymentDO = SubjectReader::readPayment($validationSubject);
-        $orderAdapter = $paymentDO->getOrder();
+                $order = $this->orderFactory->create()->load($orderAdapter->getId());
 
-        $order = $this->orderFactory->create()->load($orderAdapter->getId());
+                if (! isset($response['result']) && ! is_array($response['result'])) {
+                    return $this->createResult(
+                        false,
+                        [__('Invalid void transaction.')]
+                    );
+                } else {
+                    $order->addStatusToHistory(
+                        $response['result']['order_status'],
+                        'The authorization has been reversed successfully.',
+                        false
+                    );
+                    $order->save();
 
-        if (!isset($response['result']) && !is_array($response['result'])) {
+                    return $this->createResult(true, []);
+                }
+            }
+        } catch (\Exception $ex) {
+            echo $ex->getMessage();
+            die;
             return $this->createResult(
                 false,
-                [__('Invalid void transaction.')]
+                [__('Missing response data.')]
             );
-        } else {
-            $order->addStatusToHistory($response['result']['order_status'], 'The authorization has been reversed successfully.', false);
-            $order->save();
-            return $this->createResult(true, []);
         }
+
+        return null;
     }
 }

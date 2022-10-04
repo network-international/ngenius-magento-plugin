@@ -7,7 +7,6 @@ namespace NetworkInternational\NGenius\Gateway\Request;
  */
 class AuthorizationRequest extends AbstractRequest
 {
-
     /**
      * Gets array of data for API request
      *
@@ -18,6 +17,9 @@ class AuthorizationRequest extends AbstractRequest
      */
     public function getBuildArray($order, $storeId, $amount)
     {
+        if ($order->getCurrencyCode() == "UGX") {
+            $amount = $amount / 100;
+        }
 
         return[
             'data' => [
@@ -38,7 +40,7 @@ class AuthorizationRequest extends AbstractRequest
                 ]
             ],
             'method' => \Zend_Http_Client::POST,
-            'uri' => $this->config->getOrderRequestURL($storeId)
+            'uri' => $this->config->getOrderRequestURL($storeId, "AUTH", $order->getCurrencyCode()),
         ];
     }
 }

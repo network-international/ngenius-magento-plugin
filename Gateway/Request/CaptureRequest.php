@@ -16,7 +16,6 @@ use Magento\Payment\Helper\Formatter;
  */
 class CaptureRequest implements BuilderInterface
 {
-
     use Formatter;
 
     /**
@@ -53,26 +52,26 @@ class CaptureRequest implements BuilderInterface
         StoreManagerInterface $storeManager,
         CoreFactory $coreFactory
     ) {
-        $this->config = $config;
+        $this->config       = $config;
         $this->tokenRequest = $tokenRequest;
         $this->storeManager = $storeManager;
-        $this->coreFactory = $coreFactory;
+        $this->coreFactory  = $coreFactory;
     }
 
     /**
      * Builds ENV request
      *
      * @param array $buildSubject
-     * @throws CouldNotSaveException
+     *
      * @return array
+     * @throws CouldNotSaveException
      */
     public function build(array $buildSubject)
     {
-
         $paymentDO = SubjectReader::readPayment($buildSubject);
-        $payment = $paymentDO->getPayment();
-        $order = $paymentDO->getOrder();
-        $storeId = $order->getStoreId();
+        $payment   = $paymentDO->getPayment();
+        $order     = $paymentDO->getOrder();
+        $storeId   = $order->getStoreId();
 
         $transactionId = $payment->getTransactionId();
 
@@ -80,22 +79,27 @@ class CaptureRequest implements BuilderInterface
             throw new LocalizedException(__('No authorization transaction to proceed capture.'));
         }
 
-        $coreFactory = $this->coreFactory->create();
-        $collection = $coreFactory->getCollection()->addFieldToFilter('order_id', $order->getOrderIncrementId());
-        $orderItem = $collection->getFirstItem();
+        $collection = $this->coreFactory->create()
+                                        ->getCollection()
+                                        ->addFieldToFilter('order_id', $order->getOrderIncrementId());
+        $orderItem  = $collection->getFirstItem();
 
         if ($this->config->isComplete($storeId)) {
-            return[
-                'token' => $this->tokenRequest->getAccessToken($storeId),
+            return [
+                'token'   => $this->tokenRequest->getAccessToken($storeId),
                 'request' => [
-                    'data' => [
+                    'data'   => [
                         'amount' => [
                             'currencyCode' => $orderItem->getCurrency(),
-                            'value' => $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100
+                            'value'        => $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100
                         ]
                     ],
                     'method' => \Zend_Http_Client::POST,
-                    'uri' => $this->config->getOrderCaptureURL($orderItem->getReference(), $orderItem->getPaymentId(), $storeId)
+                    'uri'    => $this->config->getOrderCaptureURL(
+                        $orderItem->getReference(),
+                        $orderItem->getPaymentId(),
+                        $storeId
+                    )
                 ]
             ];
         } else {

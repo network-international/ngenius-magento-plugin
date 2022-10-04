@@ -7,7 +7,6 @@ namespace NetworkInternational\NGenius\Cron;
  */
 class UpdateOrder extends \NetworkInternational\NGenius\Controller\NGeniusOnline\Payment
 {
-
     /**
      * Default execute function.
      *
@@ -19,7 +18,7 @@ class UpdateOrder extends \NetworkInternational\NGenius\Controller\NGeniusOnline
             $this->cronTask();
             $this->logger->info('Cron Works');
         } catch (\Exception $ex) {
-            $this->logger->error($e->getMessage());
+            $this->logger->error($ex->getMessage());
         }
     }
 }

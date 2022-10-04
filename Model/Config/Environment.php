@@ -2,12 +2,13 @@
 
 namespace NetworkInternational\NGenius\Model\Config;
 
+use Magento\Framework\Option\ArrayInterface;
+
 /**
  * Class Environment
  */
-class Environment implements \Magento\Framework\Option\ArrayInterface
+class Environment implements ArrayInterface
 {
-
     /**
      * Options getter
      *
@@ -15,6 +16,6 @@ class Environment implements \Magento\Framework\Option\ArrayInterface
      */
     public function toOptionArray()
     {
-        return [['value' => 'uat', 'label' => __('UAT')], ['value' => 'live', 'label' => __('Live')]];
+        return [['value' => 'uat', 'label' => __('Sandbox')], ['value' => 'live', 'label' => __('Live')]];
     }
 }

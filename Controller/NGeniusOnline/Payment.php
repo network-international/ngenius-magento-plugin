@@ -2,38 +2,47 @@
 
 namespace NetworkInternational\NGenius\Controller\NGeniusOnline;
 
+use Magento\Catalog\Model\Product;
+use Magento\CatalogInventory\Api\StockManagementInterface;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Context;
-use NetworkInternational\NGenius\Gateway\Config\Config;
-use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
-use Magento\Store\Model\StoreManagerInterface;
-use NetworkInternational\NGenius\Gateway\Http\TransferFactory;
-use NetworkInternational\NGenius\Gateway\Http\Client\TransactionFetch;
-use NetworkInternational\NGenius\Model\CoreFactory;
-use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 use Magento\Framework\Controller\ResultFactory;
-use Magento\Sales\Model\Service\InvoiceService;
 use Magento\Framework\DB\TransactionFactory;
+use Magento\Sales\Api\Data\InvoiceInterface;
+use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Magento\Sales\Model\Order\Invoice;
+use Magento\Sales\Model\Order\Payment\Transaction;
+use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 use Magento\Sales\Model\OrderFactory;
-use \Psr\Log\LoggerInterface;
-use Magento\CatalogInventory\Api\StockManagementInterface;
-use Magento\Checkout\Model\Session;
-use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Sales\Model\Service\InvoiceService;
+use Magento\Store\Model\StoreManagerInterface;
+use NetworkInternational\NGenius\Gateway\Config\Config;
+use NetworkInternational\NGenius\Gateway\Http\Client\TransactionFetch;
+use NetworkInternational\NGenius\Gateway\Http\TransferFactory;
+use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
+use NetworkInternational\NGenius\Model\CoreFactory;
+use NetworkInternational\NGenius\Setup\InstallData;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Payment
  */
 class Payment extends \Magento\Framework\App\Action\Action
 {
-
     /**
-     * n-genius states
+     * N-Genius states
      */
-    const NGENIUS_STARTED = 'STARTED';
-    const NGENIUS_AUTHORISED = 'AUTHORISED';
-    const NGENIUS_CAPTURED = 'CAPTURED';
-    const NGENIUS_FAILED = 'FAILED';
+    public const NGENIUS_STARTED    = 'STARTED';
+    public const NGENIUS_AUTHORISED = 'AUTHORISED';
+    public const NGENIUS_PURCHASED  = 'PURCHASED';
+    public const NGENIUS_CAPTURED   = 'CAPTURED';
+    public const NGENIUS_FAILED     = 'FAILED';
+    public const NGENIUS_VOIDED     = 'VOIDED';
+
+    public const NGENIUS_EMBEDED = "_embedded";
 
     /**
      * @var Config
@@ -96,12 +105,12 @@ class Payment extends \Magento\Framework\App\Action\Action
     protected $invoiceSender;
 
     /**
-     * @var \NetworkInternational\NGenius\Setup\InstallData::STATUS
+     * @var \NetworkInternational\NGenius\Setup\InstallData::getStatuses()
      */
     protected $orderStatus;
 
     /**
-     * @var n-genius state
+     * @var N-Genius state
      */
     protected $ngeniusState;
 
@@ -119,23 +128,31 @@ class Payment extends \Magento\Framework\App\Action\Action
      * @var LoggerInterface
      */
     protected $logger;
-    
+
     /**
      * @var StockManagement
      */
     protected $stockManagement;
-    
+
     /**
      * @var Session
      */
     protected $checkoutSession;
- 
+
     /**
      *
      * @var ProductRepository
      */
     protected $productRepository;
-	
+    /**
+     * @var \Magento\CatalogInventory\Api\StockRegistryInterface
+     */
+    private StockRegistryInterface $stockRegistry;
+    /**
+     * @var \Magento\Catalog\Model\Product
+     */
+    private Product $productCollection;
+    private string $errorMessage = 'There is an error with the payment';
 
     /**
      * Payment constructor.
@@ -157,7 +174,8 @@ class Payment extends \Magento\Framework\App\Action\Action
      * @param LoggerInterface $logger
      * @param StockManagementInterface $stockManagement
      * @param Session $checkoutSession
-     * @param Session $productRepository
+     * @param \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry
+     * @param \Magento\Catalog\Model\Product $productCollection
      */
     public function __construct(
         Context $context,
@@ -178,28 +196,29 @@ class Payment extends \Magento\Framework\App\Action\Action
         StockManagementInterface $stockManagement,
         Session $checkoutSession,
         StockRegistryInterface $stockRegistry,
-	\Magento\Catalog\Model\Product $productCollection
+        Product $productCollection
     ) {
-        $this->config = $config;
-        $this->tokenRequest = $tokenRequest;
-        $this->storeManager = $storeManager;
-        $this->transferFactory = $transferFactory;
-        $this->transaction = $transaction;
-        $this->coreFactory = $coreFactory;
+        $this->config             = $config;
+        $this->tokenRequest       = $tokenRequest;
+        $this->storeManager       = $storeManager;
+        $this->transferFactory    = $transferFactory;
+        $this->transaction        = $transaction;
+        $this->coreFactory        = $coreFactory;
         $this->transactionBuilder = $transactionBuilder;
-        $this->resultRedirect = $resultRedirect;
-        $this->invoiceService = $invoiceService;
+        $this->resultRedirect     = $resultRedirect;
+        $this->invoiceService     = $invoiceService;
         $this->transactionFactory = $transactionFactory;
-        $this->invoiceSender = $invoiceSender;
-        $this->orderSender = $orderSender;
-        $this->orderFactory = $orderFactory;
-        $this->logger = $logger;
-        $this->orderStatus = \NetworkInternational\NGenius\Setup\InstallData::STATUS;
-        $this->stockManagement = $stockManagement;
-        $this->checkoutSession = $checkoutSession;
-        $this->stockRegistry = $stockRegistry;
-	$this->productCollection = $productCollection;
-        return parent::__construct($context);
+        $this->invoiceSender      = $invoiceSender;
+        $this->orderSender        = $orderSender;
+        $this->orderFactory       = $orderFactory;
+        $this->logger             = $logger;
+        $this->orderStatus        = InstallData::getStatuses();
+        $this->stockManagement    = $stockManagement;
+        $this->checkoutSession    = $checkoutSession;
+        $this->stockRegistry      = $stockRegistry;
+        $this->productCollection  = $productCollection;
+
+        parent::__construct($context);
     }
 
     /**
@@ -208,96 +227,66 @@ class Payment extends \Magento\Framework\App\Action\Action
      */
     public function execute()
     {
-
-        $orderRef = $this->getRequest()->getParam('ref');
-        $resultRedirect = $this->resultRedirect->create(ResultFactory::TYPE_REDIRECT);
+        $orderRef              = $this->getRequest()->getParam('ref');
+        $resultRedirectFactory = $this->resultRedirect->create(ResultFactory::TYPE_REDIRECT);
 
         if ($orderRef) {
             $result = $this->getResponseAPI($orderRef);
 
-            if ($result && isset($result['_embedded']['payment']) && is_array($result['_embedded']['payment'])) {
-                $action = isset($result['action']) ? $result['action'] : '';
-                $paymentResult = $result['_embedded']['payment'][0];
-                $orderItem = $this->fetchOrder('reference', $orderRef)->getFirstItem();
+            $embedded = self::NGENIUS_EMBEDED;
+            if ($result && isset($result[$embedded]['payment']) && is_array($result[$embedded]['payment'])) {
+                $action        = $result['action'] ?? '';
+                $paymentResult = $result[$embedded]['payment'][0];
+                $orderItem     = $this->fetchOrder('reference', $orderRef)->getFirstItem();
                 $this->processOrder($paymentResult, $orderItem, $orderRef, $action);
             }
             if ($this->error) {
-                $this->messageManager->addError(__('Failed! There is an issue with your payment transaction.'));
-                return $resultRedirect->setPath('checkout/onepage/failure');
+                $this->messageManager->addError(
+                    __(
+                        'Failed! There is an issue with your payment transaction. '
+                        . $this->errorMessage
+                    )
+                );
+
+                return $resultRedirectFactory->setPath('checkout/cart');
             } else {
-                return $resultRedirect->setPath('checkout/onepage/success');
+                return $resultRedirectFactory->setPath('checkout/onepage/success');
             }
         } else {
-            return $resultRedirect->setPath('checkout');
+            return $resultRedirectFactory->setPath('checkout');
         }
     }
 
     /**
-     * Process Order.
+     * Process Order - response from Payment Portal
      *
      * @param array $paymentResult
      * @param object $orderItem
      * @param string $orderRef
      * @param string $action
+     *
      * @return null|boolean true
      */
-    public function processOrder($paymentResult, $orderItem, $orderRef, $action)
+    public function processOrder(array $paymentResult, object $orderItem, string $orderRef, string $action)
     {
-        
-        $dataTable = [];
+        $dataTable   = [];
         $incrementId = $orderItem->getOrderId();
 
         if ($incrementId) {
-            $paymentId = '';
-            $capturedAmt = 0;
-            if (isset($paymentResult['_id'])) {
-                $paymentIdArr = explode(':', $paymentResult['_id']);
-                $paymentId = end($paymentIdArr);
-            }
+            $paymentId = $this->getPaymentId($paymentResult);
 
             $order = $this->orderFactory->create()->loadByIncrementId($incrementId);
             if ($order->getId()) {
-                if ($this->ngeniusState != self::NGENIUS_FAILED) {
-                    if ($this->ngeniusState != self::NGENIUS_STARTED) {
-                        $order->setState(\NetworkInternational\NGenius\Setup\InstallData::STATE);
-                        $order->setStatus($this->orderStatus[1]['status'])->save();
-                        $this->orderSender->send($order, true);
-                        switch ($action) {
-                            case "AUTH":
-                                $this->orderAuthorize($order, $paymentResult, $paymentId);
-                                break;
-                            case "SALE":
-                                $capturedAmt = $this->orderSale($order, $paymentResult, $paymentId);
-                                break;
-                        }
-                        $dataTable['status'] = $order->getStatus();
-
-                    } else {
-                        $dataTable['status'] = $this->orderStatus[0]['status'];
-                    }
-                } else {
-                    $this->error = true;
-                    $this->updateInvoice($order, false);
-                    $order->setStatus(\Magento\Sales\Model\Order::STATE_PAYMENT_REVIEW);
-                    $order->addStatusHistoryComment('The payment on order has failed.')
-                            ->setIsCustomerNotified(false)->save();
-                    $dataTable['status'] = $this->orderStatus[2]['status'];
-                    
-                    //Restore cart if order fails
-                    $lastRealOrder = $this->checkoutSession->getLastRealOrder();
-                    if ($lastRealOrder->getPayment()) {
-                        foreach ($order->getAllVisibleItems() as $item) {
-                            $product_id = $this->productCollection->getIdBySku($item->getSku());
-                            $qty = $item->getQtyOrdered();
-                            $this->stockManagement->backItemQty($product_id, $qty, "NULL");
-                        }
-                    }
-		    $this->checkoutSession->clearQuote();
-		    $this->checkoutSession->clearStorage();
-                }
-                $dataTable['entity_id'] = $order->getId();
+                $dataTable               = $this->getCapturePayment(
+                    $order,
+                    $paymentResult,
+                    $paymentId,
+                    $action,
+                    $dataTable
+                );
+                $dataTable['entity_id']  = $order->getId();
                 $dataTable['payment_id'] = $paymentId;
-                $dataTable['captured_amt'] = $capturedAmt;
+
                 return $this->updateTable($dataTable, $orderItem);
             } else {
                 $orderItem->setPaymentId($paymentId);
@@ -308,40 +297,96 @@ class Payment extends \Magento\Framework\App\Action\Action
         }
     }
 
+    public function getCapturePayment($order, $paymentResult, $paymentId, $action, $dataTable)
+    {
+        if ($this->ngeniusState != self::NGENIUS_FAILED) {
+            if ($this->ngeniusState != self::NGENIUS_STARTED) {
+                $order->setState(InstallData::STATE);
+                $order->setStatus($this->orderStatus[1]['status'])->save();
+                $this->orderSender->send($order, true);
+
+                if ($action === "AUTH") {
+                    $this->orderAuthorize($order, $paymentResult, $paymentId);
+                } elseif ($action === "SALE" || $action === 'PURCHASE') {
+                    $dataTable['captured_amt'] = $this->orderSale($order, $paymentResult, $paymentId);
+                }
+                $dataTable['status'] = $order->getStatus();
+            } else {
+                $dataTable['status'] = $this->orderStatus[0]['status'];
+            }
+        } else {
+            // Authorisation has failed - cancel order
+            $payment = $order->getPayment();
+            $payment->setAdditionalInformation(['raw_details_info' => json_encode($paymentResult)]);
+            $this->error        = true;
+            $this->errorMessage = 'Result Code: ' . ($paymentResult['authResponse']['resultCode'] ?? 'FAILED')
+                                  . ' Reason: ' . ($paymentResult['authResponse']['resultMessage'] ?? 'Unknown');
+            $this->updateInvoice($order, false);
+            $order->setStatus('ngenius_declined');
+            $order->addStatusHistoryComment('The payment on order has failed.')
+                  ->setIsCustomerNotified(false)->save();
+            $dataTable['status'] = $this->orderStatus[2]['status'];
+            $order->cancel()->save();
+            $this->checkoutSession->restoreQuote();
+        }
+
+        return $dataTable;
+    }
+
+    /**
+     * @param $paymentResult
+     * Get payment id from payment response
+     *
+     * @return false|mixed|string
+     */
+    public function getPaymentId($paymentResult)
+    {
+        if (isset($paymentResult['_id'])) {
+            $paymentIdArr = explode(':', $paymentResult['_id']);
+
+            return end($paymentIdArr);
+        }
+    }
+
     /**
      * Order Authorize.
      *
      * @param object $order
      * @param array $paymentResult
      * @param string $paymentId
+     *
      * @return null
      */
     public function orderAuthorize($order, $paymentResult, $paymentId)
     {
-
         if ($this->ngeniusState == self::NGENIUS_AUTHORISED) {
             $payment = $order->getPayment();
             $payment->setLastTransId($paymentId);
             $payment->setTransactionId($paymentId);
+            $payment->setAdditionalInformation(['paymentResult' => json_encode($paymentResult)]);
             $payment->setIsTransactionClosed(false);
             $formatedPrice = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
 
             $paymentData = [
-                'Card Type' => isset($paymentResult['paymentMethod']['name']) ? $paymentResult['paymentMethod']['name'] : '',
-                'Card Number' => isset($paymentResult['paymentMethod']['pan']) ? $paymentResult['paymentMethod']['pan'] : '',
-                'Amount' => $formatedPrice
+                'Card Type'   => $paymentResult['paymentMethod']['name'] ?? '',
+                'Card Number' => $paymentResult['paymentMethod']['pan'] ?? '',
+                'Amount'      => $formatedPrice
             ];
 
-            $transaction = $this->transactionBuilder->setPayment($payment)
-                    ->setOrder($order)
-                    ->setTransactionId($paymentId)
-                    ->setAdditionalInformation(
-                        [\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $paymentData]
-                    )
-                    ->setFailSafe(true)
-                    ->build(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH);
+            $transaction_builder = $this->transactionBuilder->setPayment($payment)
+                                                            ->setOrder($order)
+                                                            ->setTransactionId($paymentId)
+                                                            ->setAdditionalInformation(
+                                                                [Transaction::RAW_DETAILS => $paymentData]
+                                                            )->setAdditionalInformation(
+                    ['paymentResult' => json_encode($paymentResult)]
+                )
+                                                            ->setFailSafe(true)
+                                                            ->build(
+                                                                Transaction::TYPE_AUTH
+                                                            );
 
-            $payment->addTransactionCommentsToOrder($transaction, null);
+            $payment->addTransactionCommentsToOrder($transaction_builder, null);
             $payment->setParentTransactionId(null);
             $payment->save();
 
@@ -357,48 +402,43 @@ class Payment extends \Magento\Framework\App\Action\Action
      * @param object $order
      * @param array $paymentResult
      * @param string $paymentId
+     *
      * @return null|float
      */
     public function orderSale($order, $paymentResult, $paymentId)
     {
-
-        if ($this->ngeniusState == self::NGENIUS_CAPTURED) {
+        if ($this->ngeniusState === self::NGENIUS_CAPTURED || $this->ngeniusState === self::NGENIUS_PURCHASED) {
             $payment = $order->getPayment();
             $payment->setLastTransId($paymentId);
             $payment->setTransactionId($paymentId);
-            $payment->setIsTransactionClosed(true);
-            $grandTotal = $order->getGrandTotal();
+            $payment->setAdditionalInformation(['paymentResult' => json_encode($paymentResult)]);
+            $payment->setIsTransactionClosed(false);
+            $grandTotal    = $order->getGrandTotal();
             $formatedPrice = $order->getBaseCurrency()->formatTxt($grandTotal);
 
             $paymentData = [
-                'Card Type' => isset($paymentResult['paymentMethod']['name']) ? $paymentResult['paymentMethod']['name'] : '',
-                'Card Number' => isset($paymentResult['paymentMethod']['pan']) ? $paymentResult['paymentMethod']['pan'] : '',
-                'Amount' => $formatedPrice
+                'Card Type'   => $paymentResult['paymentMethod']['name'] ?? '',
+                'Card Number' => $paymentResult['paymentMethod']['pan'] ?? '',
+                'Amount'      => $formatedPrice
             ];
 
-            $transactionId = '';
+            $transactionId = $paymentResult['reference'];
 
-            if (isset($paymentResult['_embedded']['cnp:capture'][0])) {
-                $lastTransaction = $paymentResult['_embedded']['cnp:capture'][0];
-                if (isset($lastTransaction['_links']['self']['href'])) {
-                    $transactionArr = explode('/', $lastTransaction['_links']['self']['href']);
-                    $transactionId = end($transactionArr);
-                }elseif ($lastTransaction['_links']['cnp:refund']['href']) {
-                    $transactionArr = explode('/', $lastTransaction['_links']['cnp:refund']['href']);
-                    $transactionId = $transactionArr[count($transactionArr)-2];
-                }
-            }
+            $transaction_builder = $this->transactionBuilder->setPayment($payment)
+                                                            ->setOrder($order)
+                                                            ->setTransactionId($transactionId)
+                                                            ->setAdditionalInformation(
+                                                                [Transaction::RAW_DETAILS => (array)$paymentData]
+                                                            )
+                                                            ->setAdditionalInformation(
+                                                                ['paymentResult' => json_encode($paymentResult)]
+                                                            )
+                                                            ->setFailSafe(true)
+                                                            ->build(
+                                                                Transaction::TYPE_CAPTURE
+                                                            );
 
-            $transaction = $this->transactionBuilder->setPayment($payment)
-                    ->setOrder($order)
-                    ->setTransactionId($transactionId)
-                    ->setAdditionalInformation(
-                        [\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $paymentData]
-                    )
-                    ->setFailSafe(true)
-                    ->build(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE);
-
-            $payment->addTransactionCommentsToOrder($transaction, null);
+            $payment->addTransactionCommentsToOrder($transaction_builder, null);
             $payment->setParentTransactionId(null);
             $payment->save();
 
@@ -407,6 +447,7 @@ class Payment extends \Magento\Framework\App\Action\Action
             $order->save();
 
             $this->updateInvoice($order, true, $transactionId);
+
             return $grandTotal;
         }
     }
@@ -417,32 +458,32 @@ class Payment extends \Magento\Framework\App\Action\Action
      * @param object $order
      * @param bool $flag
      * @param string $transactionId
+     *
      * @return null
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Exception
      */
     public function updateInvoice($order, $flag, $transactionId = null)
     {
-
         if ($order->hasInvoices()) {
+            // gets here from a 'SALE' transaction
             if ($flag === false) {
                 foreach ($order->getInvoiceCollection() as $invoice) {
                     $invoice->cancel()->save();
                 }
             } else {
                 foreach ($order->getInvoiceCollection() as $invoice) {
-                    $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
-                    $invoice->setTransactionId($transactionId);
-                    $invoice->pay()->save();
-                    $transactionSave = $this->transactionFactory->create()->addObject($invoice)->addObject($invoice->getOrder());
-                    $transactionSave->save();
-                    try {
-                        $this->invoiceSender->send($invoice);
-                        $order->addStatusHistoryComment(__('Notified the customer about invoice #%1.', $invoice->getIncrementId()))
-                                ->setIsCustomerNotified(true)->save();
-                    } catch (\Exception $e) {
-                        $this->messageManager->addError(__('We can\'t send the invoice email right now.'));
-                    }
+                    $this->doUpdateInvoice($invoice, $transactionId, $order);
                 }
             }
+        } elseif ($flag) {
+            // Create invoice - gets here from a 'PURCHASE' transaction
+            $invoice = $this->invoiceService->prepareInvoice($order);
+            $invoice->register();
+            $payment = $order->getPayment();
+            $payment->setCreatedInvoice($invoice);
+            $order->setPayment($payment);
+            $this->doUpdateInvoice($invoice, $transactionId, $order);
         }
     }
 
@@ -451,6 +492,7 @@ class Payment extends \Magento\Framework\App\Action\Action
      *
      * @param array $data
      * @param object $orderItem
+     *
      * @return bool true
      */
     public function updateTable(array $data, $orderItem)
@@ -459,8 +501,11 @@ class Payment extends \Magento\Framework\App\Action\Action
         $orderItem->setState($this->ngeniusState);
         $orderItem->setStatus($data['status']);
         $orderItem->setPaymentId($data['payment_id']);
-        $orderItem->setCapturedAmt($data['captured_amt']);
+        if (isset($data['captured_amt'])) {
+            $orderItem->setCapturedAmt($data['captured_amt']);
+        }
         $orderItem->save();
+
         return true;
     }
 
@@ -468,22 +513,23 @@ class Payment extends \Magento\Framework\App\Action\Action
      * Fetch  order details.
      *
      * @param string $orderRef
+     *
      * @return array
      */
     public function getResponseAPI($orderRef)
     {
-
         $storeId = $this->storeManager->getStore()->getId();
         $request = [
-            'token' => $this->tokenRequest->getAccessToken($storeId),
+            'token'   => $this->tokenRequest->getAccessToken($storeId),
             'request' => [
-                'data' => [],
+                'data'   => [],
                 'method' => \Zend_Http_Client::GET,
-                'uri' => $this->config->getFetchRequestURL($orderRef, $storeId)
+                'uri'    => $this->config->getFetchRequestURL($orderRef, $storeId)
             ]
         ];
 
-        $result = $this->transaction->placeRequest($this->transferFactory->create($request));
+        $result = $this->transaction->placeRequest($request);
+
         return $this->resultValidator($result);
     }
 
@@ -491,17 +537,19 @@ class Payment extends \Magento\Framework\App\Action\Action
      * Validate API response.
      *
      * @param array $result
+     *
      * @return array
      */
     public function resultValidator($result)
     {
-
         if (isset($result['errors']) && is_array($result['errors'])) {
             $this->error = true;
+
             return false;
         } else {
-            $this->error = false;
-            $this->ngeniusState = isset($result['_embedded']['payment'][0]['state']) ? $result['_embedded']['payment'][0]['state'] : '';
+            $this->error        = false;
+            $this->ngeniusState = $result[self::NGENIUS_EMBEDED]['payment'][0]['state'] ?? '';
+
             return $result;
         }
     }
@@ -511,12 +559,12 @@ class Payment extends \Magento\Framework\App\Action\Action
      *
      * @param string $key
      * @param string $value
+     *
      * @return object
      */
     public function fetchOrder($key, $value)
     {
-        $coreFactory = $this->coreFactory->create();
-        return $coreFactory->getCollection()->addFieldToFilter($key, $value);
+        return $this->coreFactory->create()->getCollection()->addFieldToFilter($key, $value);
     }
 
     /**
@@ -526,18 +574,55 @@ class Payment extends \Magento\Framework\App\Action\Action
      */
     public function cronTask()
     {
-
-        $orderItems = $this->fetchOrder('state', self::NGENIUS_STARTED)->addFieldToFilter('payment_id', null)->addFieldToFilter('created_at', ['lteq' => date('Y-m-d H:i:s', strtotime('-1 hour'))])->setOrder('nid', 'DESC');
+        $orderItems = $this->fetchOrder('state', self::NGENIUS_STARTED)->addFieldToFilter(
+            'payment_id',
+            null
+        )->addFieldToFilter('created_at', ['lteq' => date('Y-m-d H:i:s', strtotime('-1 hour'))])->setOrder(
+            'nid',
+            'DESC'
+        );
         if ($orderItems) {
             foreach ($orderItems as $orderItem) {
                 $orderRef = $orderItem->getReference();
-                $result = $this->getResponseAPI($orderRef);
-                if ($result && isset($result['_embedded']['payment']) && is_array($result['_embedded']['payment'])) {
-                    $action = isset($result['action']) ? $result['action'] : '';
-                    $paymentResult = $result['_embedded']['payment'][0];
+                $result   = $this->getResponseAPI($orderRef);
+                $embedded = self::NGENIUS_EMBEDED;
+                if ($result && isset($result[$embedded]['payment']) && is_array($result[$embedded]['payment'])) {
+                    $action        = $result['action'] ?? '';
+                    $paymentResult = $result[$embedded]['payment'][0];
                     $this->processOrder($paymentResult, $orderItem, $orderRef, $action);
                 }
             }
+        }
+    }
+
+    /**
+     * @param \Magento\Sales\Api\Data\InvoiceInterface|\Magento\Sales\Model\Order\Invoice $invoice
+     * @param string|null $transactionId
+     * @param object $order
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public function doUpdateInvoice(
+        InvoiceInterface|Invoice $invoice,
+        ?string $transactionId,
+        object $order
+    ): void {
+        $invoice->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE);
+        $invoice->setTransactionId($transactionId);
+        $invoice->pay()->save();
+        $transactionSave = $this->transactionFactory->create()->addObject($invoice)->addObject(
+            $invoice->getOrder()
+        );
+        $transactionSave->save();
+        try {
+            $this->invoiceSender->send($invoice);
+            $order->addStatusHistoryComment(
+                __('Notified the customer about invoice #%1.', $invoice->getIncrementId())
+            )
+                  ->setIsCustomerNotified(true)->save();
+        } catch (\Exception $e) {
+            $this->messageManager->addError(__('We can\'t send the invoice email right now.'));
         }
     }
 }

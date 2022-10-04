@@ -8,7 +8,6 @@ namespace NetworkInternational\NGenius\Gateway\Http\Client;
 
 class TransactionSale extends AbstractTransaction
 {
-
     /**
      * Processing of API request body
      *
@@ -33,9 +32,9 @@ class TransactionSale extends AbstractTransaction
         if (isset($response->_links->payment->href)) {
             $data = $this->checkoutSession->getTableData();
 
-            $data['reference'] = isset($response->reference) ? $response->reference : '';
-            $data['action'] = isset($response->action) ? $response->action : '';
-            $data['state'] = isset($response->_embedded->payment[0]->state) ? $response->_embedded->payment[0]->state : '';
+            $data['reference'] = $response->reference ?? '';
+            $data['action'] = $response->action ?? '';
+            $data['state'] = $response->_embedded->payment[0]->state ?? '';
             $data['status'] = $this->orderStatus[0]['status'];
             $model = $this->coreFactory->create();
             $model->addData($data);

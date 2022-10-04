@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -13,6 +14,8 @@ use Magento\Quote\Model\Quote\Item as QuoteItem;
  */
 class ProductQty
 {
+    // phpcs:disable PSR2.Methods.MethodDeclaration.Underscore
+
     /**
      * Prepare array with information about used product qty and product stock item
      *

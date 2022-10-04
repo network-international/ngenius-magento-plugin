@@ -8,7 +8,6 @@ namespace NetworkInternational\NGenius\Gateway\Http\Client;
 
 class TransactionFetch extends AbstractTransaction
 {
-
     /**
      * Processing of API request body
      *
