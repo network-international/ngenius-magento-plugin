@@ -13,7 +13,6 @@ use Magento\Payment\Gateway\Http\TransferInterface;
 
 class TransferFactory implements TransferFactoryInterface
 {
-
     /**
      * @var TransferBuilder
      */
@@ -32,11 +31,10 @@ class TransferFactory implements TransferFactoryInterface
      * Builds gateway transfer object
      *
      * @param array $request
-     * @return TransferInterface
+     * @return TransferInterface|null
      */
-    public function create(array $request)
+    public function create(array $request): ?TransferInterface
     {
-
         if ($request['token'] && is_array($request['request'])) {
             return $this->transferBuilder
                             ->setBody($request['request']['data'])
@@ -49,6 +47,8 @@ class TransferFactory implements TransferFactoryInterface
                             ->setUri($request['request']['uri'])
                             ->build();
         }
+
+        return null;
     }
 
     public function tokenBuild(array $request, $apiKey)
@@ -59,7 +59,7 @@ class TransferFactory implements TransferFactoryInterface
                             ->setMethod($request['request']['method'])
                             ->setHeaders([
                                 'Authorization' => 'Basic ' . $apiKey,
-                                'Content-Type' => \Zend_Http_Client::ENC_URLENCODED
+                                'Content-Type' => 'application/vnd.ni-identity.v1+json',
                             ])
                             ->setUri($request['request']['uri'])
                             ->build();

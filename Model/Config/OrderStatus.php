@@ -2,12 +2,13 @@
 
 namespace NetworkInternational\NGenius\Model\Config;
 
+use Magento\Framework\Option\ArrayInterface;
+
 /**
  * Class OrderStatus
  */
-class OrderStatus implements \Magento\Framework\Option\ArrayInterface
+class OrderStatus implements ArrayInterface
 {
-
     /**
      * Options getter
      *
@@ -16,7 +17,7 @@ class OrderStatus implements \Magento\Framework\Option\ArrayInterface
     public function toOptionArray()
     {
 
-        $status = \NetworkInternational\NGenius\Setup\InstallData::STATUS;
+        $status = \NetworkInternational\NGenius\Setup\InstallData::getStatuses();
 
         return [['value' => $status[0]['status'], 'label' => __($status[0]['label'])]];
     }

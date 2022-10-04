@@ -10,7 +10,6 @@ use Magento\Checkout\Model\Session;
  */
 class Standard implements ObserverInterface
 {
-
     /**
      * @var Session
      */

@@ -14,7 +14,6 @@ use Magento\Framework\Message\ManagerInterface;
  */
 class TokenRequest
 {
-
     /**
      * @var Config
      */
@@ -56,53 +55,53 @@ class TokenRequest
         TransferFactory $transferFactory,
         ManagerInterface $messageManager
     ) {
-        $this->clientFactory = $clientFactory;
-        $this->config = $config;
-        $this->logger = $logger;
+        $this->clientFactory   = $clientFactory;
+        $this->config          = $config;
+        $this->logger          = $logger;
         $this->transferFactory = $transferFactory;
-        $this->messageManager = $messageManager;
+        $this->messageManager  = $messageManager;
     }
 
     /**
      * Gets Access Token
      *
      * @param int $storeId
-     * @throws CouldNotSaveException
+     *
      * @return string
+     * @throws CouldNotSaveException
      */
     public function getAccessToken($storeId = null)
     {
+        $url = $this->config->getTokenRequestURL($storeId);
+        $key = $this->config->getApiKey($storeId);
 
-        $request = [
-            'request' => [
-                'data' => http_build_query(['grant_type' => 'client_credentials']),
-                'method' => \Zend_Http_Client::POST,
-                'uri' => $this->config->getTokenRequestURL($storeId)
-            ]
-        ];
-        $transferObject = $this->transferFactory->tokenBuild($request, $this->config->getApiKey($storeId));
+        $headers = array(
+            "Authorization: Basic $key",
+            "Content-Type:  application/vnd.ni-identity.v1+json"
+        );
 
-        $result = [];
-        $client = $this->clientFactory->create();
-        $client->setConfig($transferObject->getClientConfig());
-        $client->setMethod($transferObject->getMethod());
-        $client->setRawData($transferObject->getBody());
-        $client->setHeaders($transferObject->getHeaders());
-        $client->setUri($transferObject->getUri());
+        $ch = curl_init();
 
-        try {
-            $response = $client->request();
-            $result = json_decode($response->getBody());
-            $log['response'] = $result;
-            if (isset($result->access_token)) {
-                return $result->access_token;
-            } else {
-                throw new CouldNotSaveException(__('Invalid Token.'));
+        $curlConfig = array(
+            CURLOPT_URL            => $url,
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_RETURNTRANSFER => true,
+        );
+
+        curl_setopt_array($ch, $curlConfig);
+        $response = curl_exec($ch);
+        $result   = json_decode($response);
+
+        if (isset($result->access_token)) {
+            return $result->access_token;
+        } else {
+            $message = 'Invalid Token';
+            if (isset($result->errors[0]->message)) {
+                $message = $result->errors[0]->message;
+                $message .= '. This may be due to an error in the configured Environment, API URL or API Key';
             }
-        } catch (\Zend_Http_Client_Exception $e) {
-            $this->messageManager->addError(__($e->getMessage()));
-        } finally {
-            //$this->logger->debug($log, null, true);
+            throw new CouldNotSaveException(__($message));
         }
     }
 }

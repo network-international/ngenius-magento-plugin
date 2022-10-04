@@ -13,16 +13,20 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
  */
 class CaptureStrategyCommand implements CommandInterface
 {
+    /**
+     * N-Genius sale
+     */
+    public const SALE = 'sale';
 
     /**
-     * n-genius sale
+     * N-Genius purchase
      */
-    const SALE = 'sale';
+    public const PURCHASE = 'purchase';
 
     /**
-     * n-genius capture
+     * N-Genius capture
      */
-    const CAPTURE = 'settlement';
+    public const CAPTURE = 'settlement';
 
     /**
      * @var CommandPoolInterface
@@ -48,6 +52,8 @@ class CaptureStrategyCommand implements CommandInterface
         $paymentDO = SubjectReader::readPayment($commandSubject);
         $command = $this->getCommand($paymentDO);
         $this->commandPool->get($command)->execute($commandSubject);
+
+        return null;
     }
 
     /**

@@ -7,7 +7,6 @@ namespace NetworkInternational\NGenius\Controller\Adminhtml\Core;
  */
 class Report extends \Magento\Backend\App\Action
 {
-
     /**
      * @var PageFactory
      */
@@ -35,7 +34,7 @@ class Report extends \Magento\Backend\App\Action
     public function execute()
     {
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->prepend((__('n-genius Report')));
+        $resultPage->getConfig()->getTitle()->prepend((__('N-Genius Report')));
         return $resultPage;
     }
 }

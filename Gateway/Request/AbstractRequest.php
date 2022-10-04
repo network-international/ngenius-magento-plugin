@@ -17,7 +17,6 @@ use Magento\Payment\Helper\Formatter;
  */
 abstract class AbstractRequest implements BuilderInterface
 {
-
     use Formatter;
 
     /**

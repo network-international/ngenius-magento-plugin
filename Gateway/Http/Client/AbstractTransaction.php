@@ -9,6 +9,7 @@ use Magento\Payment\Model\Method\Logger;
 use NetworkInternational\NGenius\Model\CoreFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Framework\Exception\CouldNotSaveException;
 
 /*
  * Class AbstractTransaction
@@ -16,7 +17,6 @@ use Magento\Framework\Message\ManagerInterface;
 
 abstract class AbstractTransaction implements ClientInterface
 {
-
     /**
      * @var Logger
      */
@@ -38,7 +38,7 @@ abstract class AbstractTransaction implements ClientInterface
     protected $coreFactory;
 
     /**
-     * @var \NetworkInternational\NGenius\Setup\InstallData::STATUS
+     * @var \NetworkInternational\NGenius\Setup\InstallData::getStatuses()
      */
     protected $orderStatus;
 
@@ -67,7 +67,7 @@ abstract class AbstractTransaction implements ClientInterface
         $this->clientFactory = $clientFactory;
         $this->checkoutSession = $checkoutSession;
         $this->coreFactory = $coreFactory;
-        $this->orderStatus = \NetworkInternational\NGenius\Setup\InstallData::STATUS;
+        $this->orderStatus = \NetworkInternational\NGenius\Setup\InstallData::getStatuses();
         $this->messageManager = $messageManager;
     }
 
@@ -77,45 +77,44 @@ abstract class AbstractTransaction implements ClientInterface
      * @param TransferInterface $transferObject
      * @return array
      */
-    public function placeRequest(TransferInterface $transferObject)
+    public function placeRequest($request)
     {
-
-        $this->checkoutSession->unsPaymentURL();
-
-        $data = $this->preProcess($transferObject->getBody());
-        $log = [
-            'request' => $data,
-            'request_uri' => $transferObject->getUri()
-        ];
-        $result = [];
-        $client = $this->clientFactory->create();
-        $client->setConfig($transferObject->getClientConfig());
-        $client->setMethod($transferObject->getMethod());
-        $client->setRawData($data);
-        $client->setHeaders($transferObject->getHeaders());
-        $client->setUri($transferObject->getUri());
-
-        try {
-            $response = $client->request();
-            if ($response->isSuccessful()) {
-                $result = $response->getRawBody();
-                $log['response'] = $result;
-                return $this->postProcess($result);
-            } else {
-                $log['response'] = $response->getRawBody();
-                $errCode = $response->getStatus();
-                if ((int) $errCode == 409) {
-                    $error = 'Failed! Please do the transaction after payment settlement.';
-                } else {
-                    $error = 'Failed! #' . $errCode . ': ' . $response->getMessage();
-                }
-                $this->messageManager->addError(__($error));
-            }
-        } catch (\Zend_Http_Client_Exception $e) {
-            $this->messageManager->addError(__($e->getMessage()));
-        } finally {
-            $this->logger->debug($log);
+        if (is_array($request) && $request['request']['method'] == "GET") {
+            $authorization = "Authorization: Bearer " . $request['token'];
+            $url = $request['request']['uri'];
+        } else {
+            $args = $request->getHeaders();
+            $authorization = "Authorization:" . $args['Authorization'];
+            $url = $request->getUri();
         }
+
+        $headers = array(
+            'Content-Type: application/vnd.ni-payment.v2+json',
+            $authorization,
+            'Accept: application/vnd.ni-payment.v2+json'
+        );
+
+        $ch         = curl_init();
+        $curlConfig = array(
+            CURLOPT_URL            => $url,
+            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_RETURNTRANSFER => true,
+        );
+
+        if (!is_array($request)) {
+            if ($request->getMethod() == "POST") {
+                $data  = json_encode($request->getBody());
+                $curlConfig[CURLOPT_POST]       = true;
+                $curlConfig[CURLOPT_POSTFIELDS] = $data;
+            } else {
+                $curlConfig[CURLOPT_PUT]       = true;
+            }
+        }
+
+        curl_setopt_array($ch, $curlConfig);
+        $response = curl_exec($ch);
+
+        return $this->postProcess($response);
     }
 
     /**

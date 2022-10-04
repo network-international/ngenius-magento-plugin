@@ -11,7 +11,6 @@ use Magento\Payment\Gateway\Helper\SubjectReader;
  */
 class ResponseValidator extends AbstractValidator
 {
-
     /**
      * Performs validation of result code
      *

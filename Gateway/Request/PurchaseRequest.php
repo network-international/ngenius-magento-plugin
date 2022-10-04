@@ -5,8 +5,14 @@ namespace NetworkInternational\NGenius\Gateway\Request;
 /**
  * Class SaleRequest
  */
-class SaleRequest extends AbstractRequest
+class PurchaseRequest extends AbstractRequest
 {
+    private array $mapActions = [
+        'order'             => 'PURCHASE',
+        'authorize_capture' => 'SALE',
+        'authorize'         => 'AUTH',
+    ];
+
     /**
      * Gets array of data for API request
      *
@@ -18,14 +24,16 @@ class SaleRequest extends AbstractRequest
      */
     public function getBuildArray($order, $storeId, $amount)
     {
-        $currencyCode = $order->getCurrencyCode();
+        $currencyCode = $order->getOrderCurrencyCode();
+        $action       = $order->paymentAction;
+
         if ($currencyCode == "UGX") {
             $amount = $amount / 100;
         }
 
         return [
             'data'   => [
-                'action'                 => 'SALE',
+                'action'                 => $this->mapActions[$action],
                 'amount'                 => [
                     'currencyCode' => $currencyCode,
                     'value'        => $amount
@@ -36,7 +44,7 @@ class SaleRequest extends AbstractRequest
                     ),
                     'skipConfirmationPage' => true,
                 ],
-                'merchantOrderReference' => $order->getOrderIncrementId(),
+                'merchantOrderReference' => $order->getRealOrderId(),
                 'emailAddress'           => $order->getBillingAddress()->getEmail(),
                 'billingAddress'         => [
                     'firstName' => $order->getBillingAddress()->getFirstName(),
@@ -44,7 +52,7 @@ class SaleRequest extends AbstractRequest
                 ]
             ],
             'method' => \Zend_Http_Client::POST,
-            'uri'    => $this->config->getOrderRequestURL($storeId, "SALE", $currencyCode),
+            'uri'    => $this->config->getOrderRequestURL($storeId, "PURCHASE", $currencyCode)
         ];
     }
 }

@@ -5,7 +5,7 @@
         <payment>
             <ngeniusonline>
                 <active>0</active>
-                <title>n-genius Payment Gateway</title>
+                <title>N-Genius Payment Gateway</title>
                 <model>NGeniusFacade</model>
                 <payment_action>authorize</payment_action>
                 <environment>uat</environment>
@@ -22,10 +22,13 @@
                 <can_edit>1</can_edit>
                 <order_status>ngenius_pending</order_status>
                 <allowspecific>0</allowspecific>
-                <uat_identity_url><![CDATA[https://identity-uat.ngenius-payments.com]]></uat_identity_url>
-                <live_identity_url><![CDATA[https://identity.ngenius-payments.com]]></live_identity_url>
-                <uat_api_url><![CDATA[https://api-gateway-uat.ngenius-payments.com]]></uat_api_url>
+                <active>1</active>
+                <title>N-Genius Online Payment Gateway</title>
+                <environment>uat</environment>
+                <uat_api_url><![CDATA[https://api-gateway.sandbox.ngenius-payments.com]]></uat_api_url>
                 <live_api_url><![CDATA[https://api-gateway.ngenius-payments.com]]></live_api_url>
+                <payment_action>authorize</payment_action>
+                <outlet_ref_2_currencies>AED</outlet_ref_2_currencies>
                 <token_endpoint><![CDATA[/auth/realms/%s/protocol/openid-connect/token]]></token_endpoint>
                 <order_endpoint><![CDATA[/transactions/outlets/%s/orders]]></order_endpoint>
                 <fetch_endpoint><![CDATA[/transactions/outlets/%s/orders/%s]]></fetch_endpoint>

@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
-    <menu>
-        <add id="NetworkInternational_NGenius::ngenius_report" title="n-genius Report" 
-             module="NetworkInternational_NGenius" sortOrder="100" parent="Magento_Reports::report_salesroot" 
-             action="ngenius/core/report" resource="NetworkInternational_NGenius::Report"/>
-       </menu>
-</config>

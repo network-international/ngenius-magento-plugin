@@ -2,27 +2,20 @@
 
 namespace NetworkInternational\NGenius\Model\ResourceModel;
 
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+
 /**
  * Class Core
  */
-class Core extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
+class Core extends AbstractDb
 {
+    // phpcs:disable PSR2.Methods.MethodDeclaration.Underscore
 
     /**
-     * Core constructor.
+     * Initialize resource model
      *
-     * @param  \Magento\Framework\Model\ResourceModel\Db\Context $context
+     * @return void
      */
-    public function __construct(
-        \Magento\Framework\Model\ResourceModel\Db\Context $context
-    ) {
-        parent::__construct($context);
-    }
-
-    /*
-     * Initialize
-     */
-
     protected function _construct()
     {
         $this->_init('ngenius_networkinternational', 'nid');

@@ -6,6 +6,7 @@ use Magento\Payment\Gateway\Validator\AbstractValidator;
 use Magento\Payment\Gateway\Validator\ResultInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
+use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 use Magento\Sales\Model\OrderFactory;
 
@@ -14,7 +15,6 @@ use Magento\Sales\Model\OrderFactory;
  */
 class RefundValidator extends AbstractValidator
 {
-
     /**
      * @var BuilderInterface
      */
@@ -38,7 +38,7 @@ class RefundValidator extends AbstractValidator
         OrderFactory $orderFactory
     ) {
         $this->transactionBuilder = $transactionBuilder;
-        $this->orderFactory = $orderFactory;
+        $this->orderFactory       = $orderFactory;
         parent::__construct($resultFactory);
     }
 
@@ -46,14 +46,14 @@ class RefundValidator extends AbstractValidator
      * Performs validation of result code
      *
      * @param array $validationSubject
+     *
      * @return ResultInterface
      */
     public function validate(array $validationSubject)
     {
-
-        $response = SubjectReader::readResponse($validationSubject);
-        $paymentDO = SubjectReader::readPayment($validationSubject);
-        $payment = $paymentDO->getPayment();
+        $response     = SubjectReader::readResponse($validationSubject);
+        $paymentDO    = SubjectReader::readPayment($validationSubject);
+        $payment      = $paymentDO->getPayment();
         $orderAdapter = $paymentDO->getOrder();
 
         $order = $this->orderFactory->create()->load($orderAdapter->getId());
@@ -64,20 +64,32 @@ class RefundValidator extends AbstractValidator
                 [__('Invalid refund transaction.')]
             );
         } else {
-            $paymentData = ['Refunded Amount' => $order->getBaseCurrency()->formatTxt($response['result']['refunded_amt'])];
+            $paymentData = [
+                'Refunded Amount' =>
+                    $order->getBaseCurrency()->formatTxt(
+                        $response['result']['refunded_amt']
+                    )
+            ];
             $payment->setTransactionId($response['result']['payment_id']);
             $transaction = $this->transactionBuilder->setPayment($payment)
-                    ->setOrder($order)
-                    ->setTransactionId($response['result']['payment_id'])
-                    ->setAdditionalInformation(
-                        [\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array) $paymentData]
-                    )
-                    ->setFailSafe(true)
-                    ->build(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_CAPTURE);
+                                                    ->setOrder($order)
+                                                    ->setTransactionId($response['result']['payment_id'])
+                                                    ->setAdditionalInformation(
+                                                        [Transaction::RAW_DETAILS => (array)$paymentData]
+                                                    )
+                                                    ->setFailSafe(true)
+                                                    ->build(
+                                                        Transaction::TYPE_CAPTURE
+                                                    );
             $payment->addTransactionCommentsToOrder($transaction, null);
             $payment->save();
-            $order->addStatusToHistory($response['result']['order_status'], 'The refund has been processed successfully.', false);
+            $order->addStatusToHistory(
+                $response['result']['order_status'],
+                'The refund has been processed successfully.',
+                false
+            );
             $order->save();
+
             return $this->createResult(true, []);
         }
     }

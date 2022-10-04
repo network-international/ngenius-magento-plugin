@@ -12,13 +12,14 @@ use Magento\Framework\DB\Ddl\Table;
  */
 class InstallSchema implements InstallSchemaInterface
 {
-
     /**
      * Install
      *
      * @param SchemaSetupInterface $setup
      * @param ModuleContextInterface $context
+     *
      * @return null
+     * @throws \Zend_Db_Exception
      */
     public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
@@ -107,7 +108,7 @@ class InstallSchema implements InstallSchemaInterface
             ),
             ['entity_id', 'order_id'],
             ['type' => \Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_UNIQUE]
-        )->setComment('n-genius order table')
+        )->setComment('N-Genius order table')
                 ->setOption('charset', 'utf8');
 
         $setup->getConnection()->createTable($table);
