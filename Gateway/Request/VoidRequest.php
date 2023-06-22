@@ -84,7 +84,7 @@ class VoidRequest implements BuilderInterface
                 'token'   => $this->tokenRequest->getAccessToken($storeId),
                 'request' => [
                     'data'   => [],
-                    'method' => \Zend_Http_Client::PUT,
+                    'method' => \Laminas\Http\Request::METHOD_PUT,
                     'uri'    => $this->config->getOrderVoidURL(
                         $orderId,
                         $transactionId,

@@ -523,7 +523,7 @@ class Payment extends \Magento\Framework\App\Action\Action
             'token'   => $this->tokenRequest->getAccessToken($storeId),
             'request' => [
                 'data'   => [],
-                'method' => \Zend_Http_Client::GET,
+                'method' => \Laminas\Http\Request::METHOD_GET,
                 'uri'    => $this->config->getFetchRequestURL($orderRef, $storeId)
             ]
         ];

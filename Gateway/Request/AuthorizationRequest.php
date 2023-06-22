@@ -39,7 +39,7 @@ class AuthorizationRequest extends AbstractRequest
                     'lastName' => $order->getBillingAddress()->getLastName(),
                 ]
             ],
-            'method' => \Zend_Http_Client::POST,
+            'method' => \Laminas\Http\Request::METHOD_POST,
             'uri' => $this->config->getOrderRequestURL($storeId, "AUTH", $order->getCurrencyCode()),
         ];
     }

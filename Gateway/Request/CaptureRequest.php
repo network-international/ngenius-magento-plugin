@@ -94,7 +94,7 @@ class CaptureRequest implements BuilderInterface
                             'value'        => $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100
                         ]
                     ],
-                    'method' => \Zend_Http_Client::POST,
+                    'method' => \Laminas\Http\Request::METHOD_POST,
                     'uri'    => $this->config->getOrderCaptureURL(
                         $orderItem->getReference(),
                         $orderItem->getPaymentId(),
