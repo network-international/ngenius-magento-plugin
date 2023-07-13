@@ -14,16 +14,6 @@ use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 class CaptureStrategyCommand implements CommandInterface
 {
     /**
-     * N-Genius sale
-     */
-    public const SALE = 'sale';
-
-    /**
-     * N-Genius purchase
-     */
-    public const PURCHASE = 'purchase';
-
-    /**
      * N-Genius capture
      */
     public const CAPTURE = 'settlement';
@@ -67,9 +57,7 @@ class CaptureStrategyCommand implements CommandInterface
         $payment = $paymentDO->getPayment();
         ContextHelper::assertOrderPayment($payment);
 
-        if (!$payment->getAuthorizationTransaction()) {
-            return self::SALE;
-        } else {
+        if ($payment->getAuthorizationTransaction()) {
             return self::CAPTURE;
         }
     }

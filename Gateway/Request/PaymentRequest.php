@@ -5,17 +5,13 @@ namespace NetworkInternational\NGenius\Gateway\Request;
 use NetworkInternational\NGenius\Gateway\Config\Config;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
-use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Checkout\Model\Session;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Helper\Formatter;
 
-/**
- * Class AbstractRequest
- */
-abstract class AbstractRequest implements BuilderInterface
+class PaymentRequest implements BuilderInterface
 {
     use Formatter;
 
@@ -45,7 +41,7 @@ abstract class AbstractRequest implements BuilderInterface
     protected $urlBuilder;
 
     /**
-     * AbstractRequest constructor.
+     * PaymentRequest constructor.
      *
      * @param Config $config
      * @param TokenRequest $tokenRequest
@@ -76,7 +72,6 @@ abstract class AbstractRequest implements BuilderInterface
      */
     public function build(array $buildSubject)
     {
-
         $paymentDO = SubjectReader::readPayment($buildSubject);
         $paymentDO->getPayment()->setIsTransactionPending(true);
         $order = $paymentDO->getOrder();
@@ -117,7 +112,41 @@ abstract class AbstractRequest implements BuilderInterface
      * @param object $order
      * @param int $storeId
      * @param float $amount
+     * @param $action
      * @return array
      */
-    abstract public function getBuildArray($order, $storeId, $amount);
+    public function getBuildArray($order, $storeId, $amount, $action): array
+    {
+        $currencyCode = $order->getOrderCurrencyCode();
+
+        if ($currencyCode === "UGX") {
+            $amount = $amount / 100;
+        } elseif ($currencyCode === "OMR") {
+            $amount = $amount * 10;
+        }
+
+        return [
+            'data'   => [
+                'action'                 => $action,
+                'amount'                 => [
+                    'currencyCode' => $currencyCode,
+                    'value'        => $amount
+                ],
+                'merchantAttributes'     => [
+                    'redirectUrl'          => $this->urlBuilder->getDirectUrl(
+                        "networkinternational/ngeniusonline/payment"
+                    ),
+                    'skipConfirmationPage' => true,
+                ],
+                'merchantOrderReference' => $order->getRealOrderId(),
+                'emailAddress'           => $order->getBillingAddress()->getEmail(),
+                'billingAddress'         => [
+                    'firstName' => $order->getBillingAddress()->getFirstName(),
+                    'lastName'  => $order->getBillingAddress()->getLastName(),
+                ]
+            ],
+            'method' => \Laminas\Http\Request::METHOD_POST,
+            'uri'    => $this->config->getOrderRequestURL($storeId, $action, $currencyCode),
+        ];
+    }
 }

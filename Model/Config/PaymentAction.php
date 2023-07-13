@@ -2,13 +2,13 @@
 
 namespace NetworkInternational\NGenius\Model\Config;
 
-use Magento\Framework\Option\ArrayInterface;
-use Magento\Payment\Model\Method\AbstractMethod;
+use Magento\Framework\Data\OptionSourceInterface;
+use Magento\Payment\Model\MethodInterface;
 
 /**
  * Class PaymentAction
  */
-class PaymentAction implements ArrayInterface
+class PaymentAction implements OptionSourceInterface
 {
     public const ACTION_PURCHASE = 'purchased';
 
@@ -21,16 +21,8 @@ class PaymentAction implements ArrayInterface
     {
         return [
             [
-                'value' => AbstractMethod::ACTION_AUTHORIZE,
-                'label' => __('Authorize'),
-            ],
-            [
-                'value' => AbstractMethod::ACTION_AUTHORIZE_CAPTURE,
-                'label' => __('Sale'),
-            ],
-            [
-                'value' => AbstractMethod::ACTION_ORDER,
-                'label' => __('Purchase'),
+                'value' => MethodInterface::ACTION_ORDER,
+                'label' => __('Order'),
             ]
         ];
     }

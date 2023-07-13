@@ -8,9 +8,10 @@ use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Block\ConfigurableInfo;
 use Magento\Sales\Api\Data\OrderInterface;
+use NetworkInternational\NGenius\Controller\NGeniusOnline\Payment;
 use NetworkInternational\NGenius\Gateway\Config\Config;
-use NetworkInternational\NGenius\Gateway\Http\Client\TransactionPurchase;
-use NetworkInternational\NGenius\Gateway\Request\PurchaseRequest;
+use NetworkInternational\NGenius\Gateway\Http\Client\PaymentTransaction;
+use NetworkInternational\NGenius\Gateway\Request\PaymentRequest;
 use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
 
 /**
@@ -42,73 +43,69 @@ class Ngenius extends ConfigurableInfo
     protected $config;
 
     /**
-     * @var PurchaseRequest
-     */
-    protected $_purchaseRequest;
-
-    /**
      * @var ScopeConfigInterface
      */
     protected $_scopeConfig;
 
-    protected $_transactionPurchase;
-
-    private array $allowedActions = ['order', 'authorize', 'authorize_capture'];
+    private array $allowedActions = ['PURCHASE', 'AUTH', 'SALE'];
 
     /**
      * Ngenius constructor.
      *
+     * @param OrderInterface $orderInterface
+     * @param TokenRequest $tokenRequest
+     * @param ScopeConfigInterface $scopeConfig
      * @param Session $checkoutSession
+     * @param PaymentRequest $paymentRequest
+     * @param PaymentTransaction $paymentTransaction
      */
     public function __construct(
-        OrderInterface $orderInterface,
-        TokenRequest $tokenRequest,
-        PurchaseRequest $purchaseRequest,
+        OrderInterface       $orderInterface,
+        TokenRequest         $tokenRequest,
         ScopeConfigInterface $scopeConfig,
-        TransactionPurchase $transactionPurchase,
-        Session $checkoutSession
+        Session              $checkoutSession,
+        PaymentRequest       $paymentRequest,
+        PaymentTransaction   $paymentTransaction
     ) {
         $this->checkoutSession      = $checkoutSession;
         $this->orderFactory         = $orderInterface;
         $this->tokenRequest         = $tokenRequest;
-        $this->_purchaseRequest     = $purchaseRequest;
         $this->_scopeConfig         = $scopeConfig;
-        $this->_transactionPurchase = $transactionPurchase;
+        $this->paymentRequest      = $paymentRequest;
+        $this->paymentTransaction  = $paymentTransaction;
     }
 
     /**
      * @return array
-     * @throws \Magento\Framework\Exception\CouldNotSaveException
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws CouldNotSaveException
+     * @throws LocalizedException
      */
     public function getPaymentUrl(): array
     {
-        $checkoutSessionn = $this->checkoutSession;
-        $return          = [];
+        $checkoutSession = $this->checkoutSession;
+        $return = [];
 
-        $payment_action       = $this->_scopeConfig->getValue('payment/ngeniusonline/payment_action');
+        $ngeniusPaymentAction = $this->_scopeConfig->getValue('payment/ngeniusonline/ngenius_payment_action');
 
-        $url = $checkoutSessionn->getPaymentURL() ?? '';
-        if (strpos($url, 'http') === 0  && $payment_action !== 'order') {
-            return ['url' => $url];
-        }
-
-
-        if ($incrementId = $checkoutSessionn->getLastRealOrderId()) {
+        if ($incrementId = $checkoutSession->getLastRealOrderId()) {
             $order = $this->orderFactory->loadByIncrementId($incrementId);
 
             $storeId = $order->getStoreId();
             $amount  = $order->getGrandTotal() * 100;
 
-            $order->paymentAction = $payment_action;
+            if (in_array($ngeniusPaymentAction, $this->allowedActions)) {
 
-            if (in_array($payment_action, $this->allowedActions)) {
-                $request_data = [
+                $requestData = [
                     'token'   => $this->tokenRequest->getAccessToken($storeId),
-                    'request' => $this->_purchaseRequest->getBuildArray($order, $storeId, $amount)
+                    'request' => $this->paymentRequest->getBuildArray(
+                        $order,
+                        $storeId,
+                        $amount,
+                        $ngeniusPaymentAction
+                    )
                 ];
 
-                $data = $this->_transactionPurchase->placeRequest($request_data);
+                $data = $this->paymentTransaction->placeRequest($requestData);
 
                 if (isset($data['payment_url'])) {
                     $return = ['url' => $data['payment_url']];

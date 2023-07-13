@@ -7,30 +7,20 @@ namespace NetworkInternational\NGenius\Gateway\Http\Client;
  */
 
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Sales\Model\Order;
 
-class TransactionRefund extends AbstractTransaction
+class TransactionRefund extends PaymentTransaction
 {
-    /**
-     * Processing of API request body
-     *
-     * @param array $data
-     *
-     * @return string
-     */
-    protected function preProcess(array $data)
-    {
-        return json_encode($data);
-    }
+    public const NGENIUS_CUP_RESULTS = 'cnp:china_union_pay_results';
 
     /**
      * Processing of API response
      *
      * @param array $responseEnc
      *
-     * @return array
+     * @return array|null
+     * @throws LocalizedException
      */
-    protected function postProcess($responseEnc)
+    protected function postProcess($responseEnc): ?array
     {
         $response = json_decode($responseEnc, true);
 
@@ -127,7 +117,8 @@ class TransactionRefund extends AbstractTransaction
 
     public function getAmountValue($refund, $refunded_amt)
     {
-        if (isset($refund['state']) && ($refund['state'] == 'SUCCESS') && isset($refund['amount']['value'])) {
+        if (isset($refund['state']) && ($refund['state'] == 'SUCCESS'  ||
+                (isset($refund['_links'][self::NGENIUS_CUP_RESULTS]) && $refund['state'] == 'REQUESTED')) && isset($refund['amount']['value'])) {
             return $refund['amount']['value'];
         }
     }
@@ -142,7 +133,8 @@ class TransactionRefund extends AbstractTransaction
         $refund_data = array();
         if (
             isset($lastTransaction['state']) &&
-            ($lastTransaction['state'] == 'SUCCESS') &&
+            ($lastTransaction['state'] == 'SUCCESS'  ||
+                (isset($lastTransaction['_links'][self::NGENIUS_CUP_RESULTS]) && $lastTransaction['state'] == 'REQUESTED')) &&
             isset($lastTransaction['amount']['value'])
         ) {
             $refund_data['last_refunded_amt'] = $lastTransaction['amount']['value'] / 100;
@@ -150,6 +142,9 @@ class TransactionRefund extends AbstractTransaction
 
         if (isset($lastTransaction['_links']['self']['href'])) {
             $transactionArr               = explode('/', $lastTransaction['_links']['self']['href']);
+            $refund_data['transactionId'] = end($transactionArr);
+        } elseif (isset($lastTransaction['_links'][self::NGENIUS_CUP_RESULTS])) {
+            $transactionArr               = explode('/', $lastTransaction['_links'][self::NGENIUS_CUP_RESULTS]['href']);
             $refund_data['transactionId'] = end($transactionArr);
         }
 

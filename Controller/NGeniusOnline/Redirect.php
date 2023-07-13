@@ -2,10 +2,15 @@
 
 namespace NetworkInternational\NGenius\Controller\NGeniusOnline;
 
+use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\Context;
+use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\View\LayoutFactory;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -13,7 +18,7 @@ use Magento\Sales\Model\Order;
 /**
  * Class Redirect
  */
-class Redirect extends Action
+class Redirect implements HttpGetActionInterface
 {
     protected const CARTPATH = "checkout/cart";
 
@@ -35,34 +40,36 @@ class Redirect extends Action
      * @var \Magento\Quote\Api\CartRepositoryInterface
      */
     private CartRepositoryInterface $quoteRepository;
+    private ManagerInterface $messageManager;
 
     /**
      * Redirect constructor.
      *
-     * @param Context $context
      * @param ResultFactory $resultRedirect
      * @param Session $checkoutSession
+     * @param LayoutFactory $layoutFactory
+     * @param CartRepositoryInterface $quoteRepository
+     * @param ManagerInterface $messageManager
      */
     public function __construct(
-        Context $context,
         ResultFactory $resultRedirect,
         Session $checkoutSession,
         LayoutFactory $layoutFactory,
-        CartRepositoryInterface $quoteRepository
+        CartRepositoryInterface $quoteRepository,
+        ManagerInterface $messageManager
     ) {
         $this->resultRedirect  = $resultRedirect;
         $this->checkoutSession = $checkoutSession;
         $this->layoutFactory   = $layoutFactory;
         $this->quoteRepository = $quoteRepository;
-
-        parent::__construct($context);
+        $this->messageManager = $messageManager;
     }
 
     /**
      * Redirects to ngenius payment portal
      *
-     * @return \Magento\Framework\Controller\ResultInterface
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return ResultInterface
+     * @throws NoSuchEntityException
      */
     public function execute()
     {
@@ -75,6 +82,10 @@ class Redirect extends Action
         }
 
         $resultRedirectFactory = $this->resultRedirect->create(ResultFactory::TYPE_REDIRECT);
+        $order   = $this->checkoutSession->getLastRealOrder();
+        $order->setState("pending_payment");
+        $order->setStatus("pending_payment");
+        $order->save();
         if (isset($url['url'])) {
             $resultRedirectFactory->setUrl($url['url']);
         } else {
@@ -93,7 +104,7 @@ class Redirect extends Action
     }
 
     /**
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function restoreQuote()
     {

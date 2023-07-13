@@ -31,21 +31,21 @@ class TransferFactory implements TransferFactoryInterface
      * Builds gateway transfer object
      *
      * @param array $request
+     *
      * @return TransferInterface|null
      */
     public function create(array $request): ?TransferInterface
     {
         if ($request['token'] && is_array($request['request'])) {
             return $this->transferBuilder
-                            ->setBody($request['request']['data'])
-                            ->setMethod($request['request']['method'])
-                            ->setHeaders([
-                                'Authorization' => 'Bearer ' . $request['token'],
-                                'Content-Type' => 'application/vnd.ni-payment.v2+json',
-                                'Accept' => 'application/vnd.ni-payment.v2+json'
-                            ])
-                            ->setUri($request['request']['uri'])
-                            ->build();
+                ->setBody($request['request']['data'])
+                ->setMethod($request['request']['method'])
+                ->setHeaders([
+                                 'Authorization' => 'Bearer ' . $request['token'],
+                                 'Token'         => $request['token'],
+                             ])
+                ->setUri($request['request']['uri'])
+                ->build();
         }
 
         return null;
@@ -55,14 +55,14 @@ class TransferFactory implements TransferFactoryInterface
     {
         if (is_array($request['request']) && isset($apiKey)) {
             return $this->transferBuilder
-                            ->setBody($request['request']['data'])
-                            ->setMethod($request['request']['method'])
-                            ->setHeaders([
-                                'Authorization' => 'Basic ' . $apiKey,
-                                'Content-Type' => 'application/vnd.ni-identity.v1+json',
-                            ])
-                            ->setUri($request['request']['uri'])
-                            ->build();
+                ->setBody($request['request']['data'])
+                ->setMethod($request['request']['method'])
+                ->setHeaders([
+                                 'Authorization' => 'Basic ' . $apiKey,
+                                 'Content-Type'  => 'application/vnd.ni-identity.v1+json',
+                             ])
+                ->setUri($request['request']['uri'])
+                ->build();
         }
     }
 }

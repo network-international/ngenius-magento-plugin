@@ -1,0 +1,12 @@
+=========================================================================
+Date                Version     Description
+=========================================================================
+2023-07-13: v1.0.3 : Refactor to use common classes and composer.
+                     Bugs fixes and improvements.
+
+2022-09-30: v1.0.2 : Add support for Magento 2.4.5 and PHP 8.1
+                     Bugs fixes and code quality improvements.
+                     Add Outlet 2 Reference ID and Currencies override feature.
+                     Add / update default configuration values
+
+2021-08-16: v1.0.1 : Initial version.

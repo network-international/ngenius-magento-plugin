@@ -24,7 +24,7 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public const OUTLET_REF_2            = 'outlet_ref_2';
     public const OUTLET_REF_2_CURRENCIES = 'outlet_ref_2_currencies';
     public const API_KEY                 = 'api_key';
-    public const PAYMENT_ACTION          = 'payment_action';
+    public const PAYMENT_ACTION          = 'ngenius_payment_action';
     public const UAT_IDENTITY_URL        = 'uat_identity_url';
     public const LIVE_IDENTITY_URL       = 'live_identity_url';
     public const UAT_API_URL             = 'uat_api_url';
@@ -36,6 +36,9 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public const REFUND_ENDPOINT         = 'refund_endpoint';
     public const VOID_ENDPOINT           = 'void_auth_endpoint';
     public const DEBUG                   = 'debug';
+    public const HTTP_VERSION            = 'http_version';
+    public const SUCCESS_ORDER_STATE     = 'success_order_state';
+    public const SUCCESS_ORDER_STATUS    = 'success_order_status';
     /**
      * @var \NetworkInternational\NGenius\Model\CoreFactory
      */
@@ -316,5 +319,41 @@ class Config extends \Magento\Payment\Gateway\Config\Config
         }
 
         return $trueOutletReference;
+    }
+
+    /**
+     * Gets selected http version value..
+     *
+     * @param int|null $storeId
+     *
+     * @return string
+     */
+    public function getHttpVersion(int $storeId = null): string
+    {
+        return $this->getValue(Config::HTTP_VERSION, $storeId);
+    }
+
+    /**
+     * Gets selected custom success order state
+     *
+     * @param int|null $storeId
+     *
+     * @return string|null
+     */
+    public function getCustomSuccessOrderState(int $storeId = null): ?string
+    {
+        return $this->getValue(Config::SUCCESS_ORDER_STATE, $storeId);
+    }
+
+    /**
+     * Gets selected custom success order status
+     *
+     * @param int|null $storeId
+     *
+     * @return string|null
+     */
+    public function getCustomSuccessOrderStatus(int $storeId = null): ?string
+    {
+        return $this->getValue(Config::SUCCESS_ORDER_STATUS, $storeId);
     }
 }

@@ -2,12 +2,13 @@
 
 namespace NetworkInternational\NGenius\Gateway\Request;
 
-use Magento\Framework\HTTP\ZendClientFactory;
-use NetworkInternational\NGenius\Gateway\Config\Config;
 use Magento\Framework\Exception\CouldNotSaveException;
-use Magento\Payment\Model\Method\Logger;
-use NetworkInternational\NGenius\Gateway\Http\TransferFactory;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Payment\Model\Method\Logger;
+use NetworkInternational\NGenius\Gateway\Config\Config;
+use NetworkInternational\NGenius\Gateway\Http\TransferFactory;
+use Ngenius\NgeniusCommon\NgeniusHTTPCommon;
+use Ngenius\NgeniusCommon\NgeniusHTTPTransfer;
 
 /**
  * Class TokenRequest
@@ -24,10 +25,6 @@ class TokenRequest
      */
     private $logger;
 
-    /**
-     * @var ZendClientFactory
-     */
-    protected $clientFactory;
 
     /**
      * @var TransferFactory
@@ -44,18 +41,15 @@ class TokenRequest
      *
      * @param Config $config
      * @param Logger $logger
-     * @param ZendClientFactory $clientFactory
      * @param TransferFactory $transferFactory
      * ManagerInterface $messageManager
      */
     public function __construct(
         Config $config,
         Logger $logger,
-        ZendClientFactory $clientFactory,
         TransferFactory $transferFactory,
         ManagerInterface $messageManager
     ) {
-        $this->clientFactory   = $clientFactory;
         $this->config          = $config;
         $this->logger          = $logger;
         $this->transferFactory = $transferFactory;
@@ -75,22 +69,11 @@ class TokenRequest
         $url = $this->config->getTokenRequestURL($storeId);
         $key = $this->config->getApiKey($storeId);
 
-        $headers = array(
-            "Authorization: Basic $key",
-            "Content-Type:  application/vnd.ni-identity.v1+json"
-        );
+        $ngeniusHttpTransfer = new NgeniusHTTPTransfer($url, $this->config->getHttpVersion($storeId));
+        $ngeniusHttpTransfer->setTokenHeaders($key);
+        $ngeniusHttpTransfer->setMethod('POST');
 
-        $ch = curl_init();
-
-        $curlConfig = array(
-            CURLOPT_URL            => $url,
-            CURLOPT_POST           => true,
-            CURLOPT_HTTPHEADER     => $headers,
-            CURLOPT_RETURNTRANSFER => true,
-        );
-
-        curl_setopt_array($ch, $curlConfig);
-        $response = curl_exec($ch);
+        $response = NgeniusHTTPCommon::placeRequest($ngeniusHttpTransfer);
         $result   = json_decode($response);
 
         if (isset($result->access_token)) {

@@ -3,42 +3,44 @@
 namespace NetworkInternational\NGenius\Gateway\Http\Client;
 
 use Magento\Checkout\Model\Session;
-use Magento\Framework\HTTP\ZendClientFactory;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Payment\Model\Method\Logger;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
-use NetworkInternational\NGenius\Model\CoreFactory;
+use Magento\Store\Model\StoreManagerInterface;
+use NetworkInternational\NGenius\Gateway\Config\Config;
 use Magento\Sales\Model\Order\Payment\Transaction\Builder;
+use NetworkInternational\NGenius\Model\CoreFactory;
 
 /*
  * Class TransactionVoid
  */
 
-class TransactionVoid extends AbstractTransaction
+class TransactionVoid extends PaymentTransaction
 {
     /**
-     * @var \Magento\Sales\Model\OrderFactory
+     * @var OrderFactory
      */
     private OrderFactory $orderFactory;
     /**
-     * @var \Magento\Sales\Model\Order\Payment\Transaction\Builder
+     * @var Builder
      */
     private Builder $transactionBuilder;
 
     public function __construct(
-        ZendClientFactory $clientFactory,
         Logger $logger,
         Session $checkoutSession,
-        CoreFactory $coreFactory,
         ManagerInterface $messageManager,
         OrderFactory $orderFactory,
-        Builder $transactionBuilder
+        Builder $transactionBuilder,
+        Config $config,
+        StoreManagerInterface $storeManager,
+        CoreFactory $coreFactory
     ) {
         $this->orderFactory       = $orderFactory;
         $this->transactionBuilder = $transactionBuilder;
-        parent::__construct($clientFactory, $logger, $checkoutSession, $coreFactory, $messageManager);
+        parent::__construct($logger, $checkoutSession, $messageManager, $config, $storeManager, $coreFactory);
     }
 
     /**
@@ -48,7 +50,7 @@ class TransactionVoid extends AbstractTransaction
      *
      * @return string
      */
-    protected function preProcess(array $data)
+    protected function preProcess(array $data): string
     {
         return json_encode($data);
     }
@@ -61,7 +63,7 @@ class TransactionVoid extends AbstractTransaction
      * @return array
      * @throws \Exception
      */
-    protected function postProcess($responseEnc)
+    protected function postProcess($responseEnc): ?array
     {
         $response = json_decode($responseEnc, true);
 

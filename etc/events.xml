@@ -22,5 +22,9 @@
         <observer name="ngenius_order_cancel_after"
                   instance="NetworkInternational\NGenius\Observer\OrderCancelAfter"/>
     </event>
+    <event name="sales_order_invoice_pay">
+        <observer name="ngenius_capture_auth"
+                  instance="NetworkInternational\NGenius\Observer\OrderAuthCaptured"/>
+    </event>
 </config>
 

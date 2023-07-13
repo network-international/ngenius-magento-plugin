@@ -2,16 +2,16 @@
 
 namespace NetworkInternational\NGenius\Gateway\Request;
 
-use NetworkInternational\NGenius\Gateway\Config\Config;
-use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Framework\Exception\LocalizedException;
-use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
-use NetworkInternational\NGenius\Model\CoreFactory;
+use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
-use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use NetworkInternational\NGenius\Gateway\Config\Config;
+use NetworkInternational\NGenius\Model\CoreFactory;
+use Ngenius\NgeniusCommon\NgeniusHTTPCommon;
+use Ngenius\NgeniusCommon\NgeniusHTTPTransfer;
 
 /**
  * Class RefundRequest
@@ -85,7 +85,7 @@ class RefundRequest implements BuilderInterface
         $payment   = $paymentDO->getPayment();
         $order     = $paymentDO->getOrder();
         $storeId   = $order->getStoreId();
-
+        
         $paymentResult = json_decode($payment->getAdditionalInformation('paymentResult'));
 
         $transactionId  = $paymentResult->reference;
@@ -102,6 +102,15 @@ class RefundRequest implements BuilderInterface
         $token = $this->tokenRequest->getAccessToken($storeId);
         list($refund_url, $method, $error) = $this->getRefundUrl($token, $orderReference);
 
+        $amount = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
+        $currencyCode = $order_details->getOrderCurrencyCode();
+
+        if ($currencyCode === "UGX") {
+            $amount = $amount / 100;
+        } elseif ($currencyCode === "OMR") {
+            $amount = $amount * 10;
+        }
+
         if ($error) {
             throw new LocalizedException(__($error));
         }
@@ -112,8 +121,8 @@ class RefundRequest implements BuilderInterface
                 'request' => [
                     'data'   => [
                         'amount' => [
-                            'currencyCode' => $order_details->getOrderCurrencyCode(),
-                            'value'        => $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100
+                            'currencyCode' => $currencyCode,
+                            'value'        => $amount
                         ]
                     ],
                     'method' => $method,
@@ -160,11 +169,11 @@ class RefundRequest implements BuilderInterface
         } elseif ($payment->state == "CAPTURED") {
             if (isset($payment->_embedded->$cnpcapture[0]->_links->$cnprefund->href)) {
                 $refund_url = $payment->_embedded->$cnpcapture[0]->_links->$cnprefund->href;
-            } else {
+            } elseif(isset($payment->_embedded->$cnpcapture[0]->_links->self->href)) {
                 $refund_url = $payment->_embedded->$cnpcapture[0]->_links->self->href . '/refund';
             }
         } else {
-            if (isset($payment->_links->$cnprefund->href)) {
+            if (isset($payment->_links->$cnprefund->href)  || isset($payment->_embedded->$cnpcapture[0]->_links->$cnprefund->href)) {
                 $refund_url = $payment->_embedded->$cnpcapture[0]->_links->$cnprefund->href;
             }
         }
@@ -180,24 +189,13 @@ class RefundRequest implements BuilderInterface
         $token,
         $order_ref
     ) {
-        $authorization = "Authorization: Bearer " . $token;
-        $url           = $this->config->getFetchRequestURL($order_ref);
+        $url = $this->config->getFetchRequestURL($order_ref);
 
-        $headers = array(
-            'Content-Type: application/vnd.ni-payment.v2+json',
-            $authorization,
-            'Accept: application/vnd.ni-payment.v2+json'
-        );
-
-        $ch         = curl_init();
-        $curlConfig = array(
-            CURLOPT_URL            => $url,
-            CURLOPT_HTTPHEADER     => $headers,
-            CURLOPT_RETURNTRANSFER => true,
-        );
-
-        curl_setopt_array($ch, $curlConfig);
-        $response = curl_exec($ch);
+        $storeId = $this->storeManager->getStore()->getId();
+        $ngeniusHttpTransfer = new NgeniusHTTPTransfer($url, $this->config->getHttpVersion($storeId));
+        $ngeniusHttpTransfer->setMethod('GET');
+        $ngeniusHttpTransfer->setPaymentHeaders($token);
+        $response = NgeniusHTTPCommon::placeRequest($ngeniusHttpTransfer);
 
         return json_decode($response);
     }
