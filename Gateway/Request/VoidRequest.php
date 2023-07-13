@@ -5,11 +5,10 @@ namespace NetworkInternational\NGenius\Gateway\Request;
 use NetworkInternational\NGenius\Gateway\Config\Config;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Framework\Exception\LocalizedException;
-use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
-use NetworkInternational\NGenius\Model\CoreFactory;
 use Magento\Payment\Helper\Formatter;
+use Laminas\Http\Request;
 
 class VoidRequest implements BuilderInterface
 {
@@ -30,10 +29,6 @@ class VoidRequest implements BuilderInterface
      */
     protected $storeManager;
 
-    /**
-     * @var CoreFactory
-     */
-    protected $coreFactory;
 
     /**
      * VoidRequest constructor.
@@ -41,18 +36,15 @@ class VoidRequest implements BuilderInterface
      * @param Config $config
      * @param TokenRequest $tokenRequest
      * @param StoreManagerInterface $storeManager
-     * @param CoreFactory $coreFactory
      */
     public function __construct(
         Config $config,
         TokenRequest $tokenRequest,
         StoreManagerInterface $storeManager,
-        CoreFactory $coreFactory
     ) {
         $this->config       = $config;
         $this->tokenRequest = $tokenRequest;
         $this->storeManager = $storeManager;
-        $this->coreFactory  = $coreFactory;
     }
 
     /**
@@ -84,7 +76,7 @@ class VoidRequest implements BuilderInterface
                 'token'   => $this->tokenRequest->getAccessToken($storeId),
                 'request' => [
                     'data'   => [],
-                    'method' => \Zend_Http_Client::PUT,
+                    'method' => \Laminas\Http\Request::METHOD_PUT,
                     'uri'    => $this->config->getOrderVoidURL(
                         $orderId,
                         $transactionId,

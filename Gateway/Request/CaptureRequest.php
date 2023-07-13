@@ -2,6 +2,7 @@
 
 namespace NetworkInternational\NGenius\Gateway\Request;
 
+use Magento\Framework\Exception\CouldNotSaveException;
 use NetworkInternational\NGenius\Gateway\Config\Config;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Framework\Exception\LocalizedException;
@@ -10,6 +11,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use NetworkInternational\NGenius\Model\CoreFactory;
 use Magento\Payment\Helper\Formatter;
+use Laminas\Http\Request;
 
 /**
  * Class CaptureRequest
@@ -64,10 +66,10 @@ class CaptureRequest implements BuilderInterface
      * @param array $buildSubject
      *
      * @return array
-     * @throws CouldNotSaveException
+     * @throws CouldNotSaveException|LocalizedException
      */
     public function build(array $buildSubject)
-    {
+    {               
         $paymentDO = SubjectReader::readPayment($buildSubject);
         $payment   = $paymentDO->getPayment();
         $order     = $paymentDO->getOrder();
@@ -84,17 +86,26 @@ class CaptureRequest implements BuilderInterface
                                         ->addFieldToFilter('order_id', $order->getOrderIncrementId());
         $orderItem  = $collection->getFirstItem();
 
+        $amount   = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
+        $currencyCode = $orderItem->getCurrency();
+
+        if ($currencyCode === "UGX") {
+            $amount = $amount / 100;
+        } elseif ($currencyCode === "OMR") {
+            $amount = $amount * 10;
+        }
+
         if ($this->config->isComplete($storeId)) {
             return [
                 'token'   => $this->tokenRequest->getAccessToken($storeId),
                 'request' => [
                     'data'   => [
                         'amount' => [
-                            'currencyCode' => $orderItem->getCurrency(),
-                            'value'        => $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100
+                            'currencyCode' => $currencyCode,
+                            'value'        => $amount
                         ]
                     ],
-                    'method' => \Zend_Http_Client::POST,
+                    'method' => \Laminas\Http\Request::METHOD_POST,
                     'uri'    => $this->config->getOrderCaptureURL(
                         $orderItem->getReference(),
                         $orderItem->getPaymentId(),

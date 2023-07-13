@@ -2,30 +2,15 @@
 
 namespace NetworkInternational\NGenius\Gateway\Http\Client;
 
-/*
- * Class TransactionFetch
- */
-
-class TransactionFetch extends AbstractTransaction
+class TransactionFetch extends PaymentTransaction
 {
-    /**
-     * Processing of API request body
-     *
-     * @param array $data
-     * @return string
-     */
-    protected function preProcess(array $data)
-    {
-        return json_encode($data);
-    }
-
     /**
      * Processing of API response
      *
      * @param array $responseEnc
-     * @return array
+     * @return array|null
      */
-    protected function postProcess($responseEnc)
+    protected function postProcess($responseEnc): ?array
     {
         return json_decode($responseEnc, true);
     }

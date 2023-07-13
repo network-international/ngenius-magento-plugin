@@ -6,20 +6,8 @@ namespace NetworkInternational\NGenius\Gateway\Http\Client;
  * Class TransactionCapture
  */
 
-class TransactionCapture extends AbstractTransaction
+class TransactionCapture extends PaymentTransaction
 {
-    /**
-     * Processing of API request body
-     *
-     * @param array $data
-     *
-     * @return string
-     */
-    protected function preProcess(array $data)
-    {
-        return json_encode($data);
-    }
-
     /**
      * Processing of API response
      *
@@ -27,7 +15,7 @@ class TransactionCapture extends AbstractTransaction
      *
      * @return null|array
      */
-    protected function postProcess($responseEnc)
+    protected function postProcess($responseEnc): ?array
     {
         $response = json_decode($responseEnc, true);
 

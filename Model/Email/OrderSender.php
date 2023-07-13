@@ -3,6 +3,7 @@
 namespace NetworkInternational\NGenius\Model\Email;
 
 use Magento\Sales\Model\Order;
+use NetworkInternational\NGenius\Gateway\Config\Config;
 
 /**
  * Class OrderSender
@@ -30,9 +31,7 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
     {
         $paymentCode = $order->getPayment()->getMethodInstance()->getCode();
 
-        if ($paymentCode == \NetworkInternational\NGenius\Gateway\Config\Config::CODE && $order->isPaymentReview()) {
-            return false;
-        } else {
+        if ($paymentCode != Config::CODE || !$order->isPaymentReview() && $order->getStatus() !== "processing") {
             $order->setSendEmail(true);
 
             if (!$this->globalConfig->getValue('sales_email/general/async_sending') || $forceSyncMode) {
@@ -47,7 +46,7 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
             }
 
             $this->orderResource->saveAttribute($order, 'send_email');
-            return false;
         }
+        return false;
     }
 }

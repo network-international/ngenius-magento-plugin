@@ -118,28 +118,36 @@ class PurchaseRefund implements ObserverInterface
 
         $payment = $data['payment'];
 
-        $ptid = $payment->getParentTransactionId();
+        $ptid = str_replace("-capture", "", $payment->getParentTransactionId());
         $collection = $this->coreFactory->create()
                                         ->getCollection()
                                         ->addFieldToFilter('payment_id', $ptid);
 
         $orderItem  = $collection->getFirstItem();
-        $reversed = $orderItem->getData('state');
+        $itemStatus = $orderItem->getData('status') ?? "";
+        $itemState = $orderItem->getData('state') ?? "";
 
-        if ($reversed !== 'REVERSED') {
-            return;
+        if ($itemState === 'REVERSED') {
+            $this->logger->info('Credit Memo: ' . json_encode($creditMemo));
+            $invoice = $creditMemo->getInvoice();
+            $this->logger->info('Invoice: ' . json_encode($invoice));
+            $creditMemo->setGrandTotal($invoice->getGrandTotal());
+            $this->setCreditMemoValues($creditMemo, $invoice);
+            $this->setInvoiceRefundedValues($creditMemo, $invoice);
+            $this->setCreditMemoRefundedQuantities($creditMemo, $invoice);
+            $this->setOrderRefundedQuantities($order, $creditMemo, true);
+            $order->setStatus(Payment::NGENIUS_VOIDED);
+            $order->save();
+        } elseif (
+             strpos(strtolower($itemState), "refunded") ||
+             strpos(strtolower($itemStatus), "refunded")
+        ) {
+            $order->setState('ngenius_state');
+            $order->setStatus($itemStatus);
+            $order->save();
         }
 
-        $this->logger->info('Credit Memo: ' . json_encode($creditMemo));
-        $invoice = $creditMemo->getInvoice();
-        $this->logger->info('Invoice: ' . json_encode($invoice));
-        $creditMemo->setGrandTotal($invoice->getGrandTotal());
-        $this->setCreditMemoValues($creditMemo, $invoice);
-        $this->setInvoiceRefundedValues($creditMemo, $invoice);
-        $this->setCreditMemoRefundedQuantities($creditMemo, $invoice);
-        $this->setOrderRefundedQuantities($order, $creditMemo, true);
-        $order->setStatus(Payment::NGENIUS_VOIDED);
-        $order->save();
+
     }
 
     /**

@@ -1,11 +1,4 @@
 <?php
-/*
- * Copyright (c) 2022 Fortis
- *
- * Author: App Inlet (Pty) Ltd
- *
- * Released under the GNU General Public License
- */
 
 namespace NetworkInternational\NGenius\Observer;
 
@@ -55,12 +48,14 @@ class OrderCancelAfter implements ObserverInterface
             if (!$order) {
                 return;
             }
-            $payment       = $order->getPayment();
+            $payment = $order->getPayment();
 
-            $d = json_decode($payment->getAdditionalInformation()['raw_details_info']);
-            if ($d->state === 'FAILED') {
-                $order->setStatus('ngenius_declined');
-                $order->setState(Order::STATE_CLOSED);
+            if (!empty($payment->getAdditionalInformation()['raw_details_info'])) {
+                $d = json_decode($payment->getAdditionalInformation()['raw_details_info']);
+                if ($d->state === 'FAILED') {
+                    $order->setStatus('ngenius_declined');
+                    $order->setState(Order::STATE_CLOSED);
+                }
             }
         } catch (\Exception $e) {
             throw new LocalizedException(__('There was a problem. ' . $e->getMessage()));

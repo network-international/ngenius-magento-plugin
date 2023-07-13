@@ -39,7 +39,7 @@
         </arguments>
     </virtualType>
 
-    <type name="NetworkInternational\NGenius\Gateway\Http\Client\AbstractTransaction">
+    <type name="NetworkInternational\NGenius\Gateway\Http\Client\PaymentTransaction">
         <arguments>
             <argument name="logger" xsi:type="object">NGeniusLogger</argument>
         </arguments>
@@ -49,65 +49,11 @@
     <virtualType name="NGeniusCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="authorize" xsi:type="string">NGeniusAuthorizeCommand</item>
-                <item name="sale" xsi:type="string">NGeniusSaleCommand</item>
-                <item name="purchase" xsi:type="string">NGeniusPurchaseCommand</item>
                 <item name="capture" xsi:type="string">NGeniusCaptureStrategyCommand</item>
                 <item name="settlement" xsi:type="string">NGeniusCaptureCommand</item>
                 <item name="void" xsi:type="string">NGeniusVoidCommand</item>
                 <item name="refund" xsi:type="string">NGeniusRefundCommand</item>
                 <item name="cancel" xsi:type="string">NGeniusVoidCommand</item>
-            </argument>
-        </arguments>
-    </virtualType>
-
-    <!-- Purchase command -->
-    <virtualType name="NGeniusPurchaseCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
-        <arguments>
-            <argument name="requestBuilder" xsi:type="object">NGeniusPurchaseRequest</argument>
-            <argument name="transferFactory" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\TransferFactory</argument>
-            <argument name="client" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\Client\TransactionPurchase</argument>
-        </arguments>
-    </virtualType>
-    <!-- Purchase Request -->
-    <virtualType name="NGeniusPurchaseRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
-        <arguments>
-            <argument name="builders" xsi:type="array">
-                <item name="settlement" xsi:type="string">NetworkInternational\NGenius\Gateway\Request\PurchaseRequest</item>
-            </argument>
-        </arguments>
-    </virtualType>
-
-    <!-- Sale command -->
-    <virtualType name="NGeniusSaleCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
-        <arguments>
-            <argument name="requestBuilder" xsi:type="object">NGeniusSaleRequest</argument>
-            <argument name="transferFactory" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\TransferFactory</argument>
-            <argument name="client" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\Client\TransactionSale</argument>
-        </arguments>
-    </virtualType>
-    <!-- Sale Request -->
-    <virtualType name="NGeniusSaleRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
-        <arguments>
-            <argument name="builders" xsi:type="array">
-                <item name="settlement" xsi:type="string">NetworkInternational\NGenius\Gateway\Request\SaleRequest</item>
-            </argument>
-        </arguments>
-    </virtualType>
-
-    <!-- Authorize command -->
-    <virtualType name="NGeniusAuthorizeCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
-        <arguments>
-            <argument name="requestBuilder" xsi:type="object">NGeniusAuthorizationRequest</argument>
-            <argument name="transferFactory" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\TransferFactory</argument>
-            <argument name="client" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\Client\TransactionAuth</argument>
-        </arguments>
-    </virtualType>
-    <!-- Authorization Request -->
-    <virtualType name="NGeniusAuthorizationRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
-        <arguments>
-            <argument name="builders" xsi:type="array">
-                <item name="transaction" xsi:type="string">NetworkInternational\NGenius\Gateway\Request\AuthorizationRequest</item>
             </argument>
         </arguments>
     </virtualType>

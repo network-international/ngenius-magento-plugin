@@ -14,11 +14,16 @@ class UpdateOrder extends \NetworkInternational\NGenius\Controller\NGeniusOnline
      */
     public function execute()
     {
-        try {
-            $this->cronTask();
-            $this->logger->info('Cron Works');
-        } catch (\Exception $ex) {
-            $this->logger->error($ex->getMessage());
-        }
+        $this->state->emulateAreaCode(
+            Area::AREA_FRONTEND,
+                function () {
+                    try {
+                        $this->cronTask();
+                        $this->logger->info('Cron Works');
+                    } catch (\Exception $ex) {
+                        $this->logger->error($ex->getMessage());
+                    }
+                }
+        );
     }
 }

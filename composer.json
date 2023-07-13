@@ -1,8 +1,8 @@
 {
   "name": "networkinternational/ngenius",
-  "description": "Next generation payment gateway by Network International Payment Soultions",
+  "description": "Next generation payment gateway by Network International Payment Solutions",
   "require": {
-    "php": "~5.5.0|~5.6.0|~7.0.0",
+    "php": "~7.0|~8.0",
     "magento/module-sales": "100.0.*",
     "magento/module-checkout": "100.0.*",
     "magento/module-payment": "100.0.*",
@@ -11,14 +11,6 @@
   "type": "magento2-module",
   "version": "1.0.1",
   "license": "proprietary",
-  "authors": [
-    {
-      "name": "ABZER",
-      "email": "info@abzer.com",
-      "homepage": "https://www.abzer.com",
-      "role": "Development and Support"
-    }
-  ],
   "autoload": {
     "files": [
       "registration.php"
