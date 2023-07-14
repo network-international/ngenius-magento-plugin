@@ -15,7 +15,7 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
     {
         $setup->startSetup();
 
-        if (version_compare($context->getVersion(), '1.0.1') > 0) {
+        if (version_compare($context->getVersion(), '1.0.1') === 0) {
             $table1 = $setup->getTable('sales_order_status');
             if ($setup->getConnection()->isTableExists($table1)) {
                 $setup->getConnection()->insert($table1, [
