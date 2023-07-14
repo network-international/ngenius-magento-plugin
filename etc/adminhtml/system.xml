@@ -33,8 +33,8 @@
                     <source_model>NetworkInternational\NGenius\Model\Config\NgeniusPaymentAction</source_model>
                     <config_path>payment/ngeniusonline/ngenius_payment_action</config_path>
                 </field>
-                <field id="payment_action" translate="label" type="select" sortOrder="6" showInDefault="0" showInWebsite="0" showInStore="0" >
-                    <label>Payment Action</label>
+                <field id="payment_action" translate="label" type="select" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0" >
+                    <label>Magento Order Action</label>
                     <source_model>NetworkInternational\NGenius\Model\Config\PaymentAction</source_model>
                     <config_path>payment/ngeniusonline/payment_action</config_path>
                 </field>
