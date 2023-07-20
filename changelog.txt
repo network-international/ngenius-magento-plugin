@@ -1,6 +1,9 @@
 =========================================================================
 Date                Version     Description
 =========================================================================
+2023-07-20: v1.0.5 : Handle deprecated functionality str_replace() passing null to parameter.
+                     Don't allow order email for invalid order indexes.
+
 2023-07-14: v1.0.4 : Fix 'command doesn't exist' error when Magento payment_action does not save.
 
 2023-07-13: v1.0.3 : Refactor to use common classes and composer.
