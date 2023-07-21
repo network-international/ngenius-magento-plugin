@@ -4,7 +4,7 @@
 
 ## Installation
 
-For instructions on setting up the NGenius Magento plugin, please refer our [documentation.]([https://docs.ngenius-payments.com/docs/magento-20](https://docs.ngenius-payments.com/docs/magento-245))
+For instructions on setting up the NGenius Magento plugin, please refer our [documentation.](https://docs.ngenius-payments.com/docs/magento-245)
 
 
 ## Download
