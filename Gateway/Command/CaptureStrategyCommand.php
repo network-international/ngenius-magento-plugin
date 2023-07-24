@@ -2,11 +2,11 @@
 
 namespace NetworkInternational\NGenius\Gateway\Command;
 
-use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Payment\Gateway\CommandInterface;
-use Magento\Payment\Gateway\Helper\ContextHelper;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
+use Magento\Payment\Gateway\Helper\ContextHelper;
+use Magento\Payment\Gateway\Helper\SubjectReader;
 
 /**
  * Class CaptureStrategyCommand
@@ -41,7 +41,9 @@ class CaptureStrategyCommand implements CommandInterface
     {
         $paymentDO = SubjectReader::readPayment($commandSubject);
         $command = $this->getCommand($paymentDO);
-        $this->commandPool->get($command)->execute($commandSubject);
+        if ($command && $command !== "authorize") {
+            $this->commandPool->get($command)->execute($commandSubject);
+        }
 
         return null;
     }

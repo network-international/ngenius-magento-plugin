@@ -1,6 +1,8 @@
 =========================================================================
 Date                Version     Description
 =========================================================================
+2023-07-24: v1.0.6 : Add type check for commands before attempting to run.
+
 2023-07-20: v1.0.5 : Handle deprecated functionality str_replace() passing null to parameter.
                      Don't allow order email for invalid order indexes.
 
