@@ -7,7 +7,6 @@
                 <active>0</active>
                 <title>N-Genius Payment Gateway</title>
                 <model>NGeniusFacade</model>
-                <ngenius_payment_action>authorize</ngenius_payment_action>
                 <environment>uat</environment>
                 <is_gateway>1</is_gateway>
                 <can_use_checkout>1</can_use_checkout>
@@ -29,7 +28,6 @@
                 <environment>uat</environment>
                 <uat_api_url><![CDATA[https://api-gateway.sandbox.ngenius-payments.com]]></uat_api_url>
                 <live_api_url><![CDATA[https://api-gateway.ngenius-payments.com]]></live_api_url>
-                <payment_action>order</payment_action>
                 <ngenius_payment_action>sale</ngenius_payment_action>
                 <outlet_ref_2_currencies>AED</outlet_ref_2_currencies>
                 <token_endpoint><![CDATA[/auth/realms/%s/protocol/openid-connect/token]]></token_endpoint>

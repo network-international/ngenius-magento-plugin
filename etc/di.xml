@@ -50,6 +50,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="capture" xsi:type="string">NGeniusCaptureStrategyCommand</item>
+                <item name="authorize" xsi:type="string">NGeniusCaptureStrategyCommand</item>
                 <item name="settlement" xsi:type="string">NGeniusCaptureCommand</item>
                 <item name="void" xsi:type="string">NGeniusVoidCommand</item>
                 <item name="refund" xsi:type="string">NGeniusRefundCommand</item>
