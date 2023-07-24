@@ -1,10 +1,22 @@
-# NGenius Magento Plugin
+# N-Genius Magento Plugin
 
 ![Banner](assets/banner.jpeg)
 
 ## Installation
 
-For instructions on setting up the NGenius Magento plugin, please refer our [documentation.](https://docs.ngenius-payments.com/docs/magento-245)
+For more detailed instructions on setting up the N-Genius Magento plugin, please refer our [documentation.](https://docs.ngenius-payments.com/docs/magento-245)
+
+### Install using FTP/SFTP
+- Download ***ngenius-magento-plugin-master.zip*** and unzip it to a directory on your local machine.
+- Use an FTP tool (such as *FileZilla*) to upload the contents of ```ngenius-magento-plugin-master``` directory to the ```app\code\NetworkInternational\NGenius\```directory of your Magento installation.
+- From the Magento root directory, install N-Genius dependencies using ```composer require ngenius/ngenius-common```.
+
+### Magento Build Steps
+- ```bin/magento module:enable NetworkInternational_NGenius```
+- ```bin/magento setup:upgrade```
+- ```bin/magento setup:di:compile```
+- ```bin/magento indexer:reindex```
+- ```bin/magento cache:clean```
 
 
 ## Download
