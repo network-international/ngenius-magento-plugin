@@ -4,7 +4,7 @@
 
 ## Installation
 
-For more detailed instructions on setting up the N-Genius Magento plugin, please refer our [documentation.](https://docs.ngenius-payments.com/docs/magento-245)
+For more detailed instructions on setting up the N-Genius Magento plugin, please refer to our [documentation.](https://docs.ngenius-payments.com/docs/magento-245)
 
 ### Install using FTP/SFTP
 - Download ***ngenius-magento-plugin-master.zip*** and unzip it to a directory on your local machine.
