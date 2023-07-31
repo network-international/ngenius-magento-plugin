@@ -33,22 +33,22 @@
                     <source_model>NetworkInternational\NGenius\Model\Config\NgeniusPaymentAction</source_model>
                     <config_path>payment/ngeniusonline/ngenius_payment_action</config_path>
                 </field>
-                <field id="order_status" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1" >
+                <field id="ngenius_initial_order_status" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1" >
                     <label>Status of new order</label>
-                    <source_model>NetworkInternational\NGenius\Model\Config\OrderStatus</source_model>
-                    <config_path>payment/ngeniusonline/order_status</config_path>
+                    <config_path>payment/ngeniusonline/ngenius_initial_order_status</config_path>
+                    <source_model>Magento\Sales\Model\ResourceModel\Order\Status\Collection</source_model>
                 </field>
                 <field id="success_order_state" translate="label" type="select" sortOrder="8" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Successful Order State</label>
                     <config_path>payment/ngeniusonline/success_order_state</config_path>
-                    <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+                    <source_model>Magento\Sales\Model\ResourceModel\Order\Status\Collection</source_model>
                 </field>
                 <field id="success_order_status" translate="label" type="select" sortOrder="9" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Successful Order Status</label>
                     <config_path>payment/ngeniusonline/success_order_status</config_path>
-                    <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+                    <source_model>Magento\Sales\Model\ResourceModel\Order\Status\Collection</source_model>
                 </field>
                 <field id="outlet_ref" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Outlet Reference ID</label>

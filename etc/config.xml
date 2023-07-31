@@ -19,7 +19,8 @@
                 <can_void>1</can_void>
                 <can_cancel>1</can_cancel>
                 <can_edit>1</can_edit>
-                <order_status>ngenius_pending</order_status>
+                <order_status>pending_payment</order_status>
+                <ngenius_initial_order_status>pending_payment</ngenius_initial_order_status>
                 <success_order_state>ngenius_state</success_order_state>
                 <success_order_status>ngenius_complete</success_order_status>
                 <allowspecific>0</allowspecific>
