@@ -2,11 +2,9 @@
 
 namespace NetworkInternational\NGenius\Controller\NGeniusOnline;
 
-use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\App\Action\Action;
-use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -41,6 +39,7 @@ class Redirect implements HttpGetActionInterface
      */
     private CartRepositoryInterface $quoteRepository;
     private ManagerInterface $messageManager;
+    private ScopeConfigInterface $scopeConfig;
 
     /**
      * Redirect constructor.
@@ -56,13 +55,15 @@ class Redirect implements HttpGetActionInterface
         Session $checkoutSession,
         LayoutFactory $layoutFactory,
         CartRepositoryInterface $quoteRepository,
-        ManagerInterface $messageManager
+        ManagerInterface $messageManager,
+        ScopeConfigInterface $scopeConfig
     ) {
         $this->resultRedirect  = $resultRedirect;
         $this->checkoutSession = $checkoutSession;
         $this->layoutFactory   = $layoutFactory;
         $this->quoteRepository = $quoteRepository;
         $this->messageManager = $messageManager;
+        $this->scopeConfig    = $scopeConfig;
     }
 
     /**
@@ -80,11 +81,12 @@ class Redirect implements HttpGetActionInterface
         } catch (\Exception $exception) {
             $url['exception'] = $exception;
         }
+        $initialStatus = $this->scopeConfig->getValue('payment/ngeniusonline/ngenius_initial_order_status');
 
         $resultRedirectFactory = $this->resultRedirect->create(ResultFactory::TYPE_REDIRECT);
         $order   = $this->checkoutSession->getLastRealOrder();
-        $order->setState("pending_payment");
-        $order->setStatus("pending_payment");
+        $order->setState($initialStatus);
+        $order->setStatus($initialStatus);
         $order->save();
         if (isset($url['url'])) {
             $resultRedirectFactory->setUrl($url['url']);
@@ -92,7 +94,6 @@ class Redirect implements HttpGetActionInterface
             $exception = $url['exception'];
             $this->messageManager->addExceptionMessage($exception, $exception->getMessage());
             $resultRedirectFactory->setPath(self::CARTPATH);
-            $order   = $this->checkoutSession->getLastRealOrder();
             $order->addCommentToStatusHistory($exception->getMessage());
             $order->setStatus('ngenius_failed');
             $order->setState(Order::STATE_CLOSED);
