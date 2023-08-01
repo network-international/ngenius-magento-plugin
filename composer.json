@@ -1,16 +1,17 @@
 {
   "name": "networkinternational/ngenius",
-  "description": "Next generation payment gateway by Network International Payment Solutions",
-  "require": {
-    "php": "~7.0|~8.0",
-    "magento/module-sales": "100.0.*",
-    "magento/module-checkout": "100.0.*",
-    "magento/module-payment": "100.0.*",
-    "magento/framework": "100.0.*"
-  },
+  "description": "Network International N-Genius Payment Gateway for Magento 2",
   "type": "magento2-module",
-  "version": "1.0.1",
-  "license": "proprietary",
+  "version": "1.0.7",
+  "minimum-stability": "stable",
+  "license": "GPL-3.0",
+  "authors": [{
+    "name": "App Inlet (Pty) Ltd",
+    "email": "info@appinlet.com"
+  }],
+  "require": {
+    "php": "^8.1"
+  },
   "autoload": {
     "files": [
       "registration.php"
