@@ -10,7 +10,8 @@
     "email": "info@appinlet.com"
   }],
   "require": {
-    "php": "^8.1"
+    "php": "^8.1",
+    "composer require ngenius/ngenius-common": "1.0.2"
   },
   "autoload": {
     "files": [
