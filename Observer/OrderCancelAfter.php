@@ -3,7 +3,6 @@
 namespace NetworkInternational\NGenius\Observer;
 
 use Fortis\Fortis\Model\FortisApi;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
@@ -11,27 +10,38 @@ use Magento\Payment\Observer\AbstractDataAssignObserver;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\Transaction\Builder;
+use Magento\Store\Model\StoreManagerInterface;
+use NetworkInternational\NGenius\Gateway\Config\Config;
 
 class OrderCancelAfter implements ObserverInterface
 {
 
     /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     * @var Config
      */
-    private ScopeConfigInterface $scopeConfig;
+    protected $config;
+
     /**
      * @var \Magento\Sales\Model\Order\Payment\Transaction\Builder
      */
     private Builder $transactionBuilder;
 
     /**
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Magento\Sales\Model\Order\Payment\Transaction\Builder $transactionBuilder
+     * @var StoreManagerInterface
      */
-    public function __construct(ScopeConfigInterface $scopeConfig, Builder $transactionBuilder)
+    protected $storeManager;
+
+    /**
+     * @param Config $config
+     * @param \Magento\Sales\Model\Order\Payment\Transaction\Builder $transactionBuilder
+     * @param StoreManagerInterface $storeManager
+     */
+
+    public function __construct(Config $config, Builder $transactionBuilder, StoreManagerInterface $storeManager)
     {
-        $this->scopeConfig        = $scopeConfig;
+        $this->config             = $config;
         $this->transactionBuilder = $transactionBuilder;
+        $this->storeManager       = $storeManager;
     }
 
     /**
@@ -42,6 +52,20 @@ class OrderCancelAfter implements ObserverInterface
      */
     public function execute(Observer $observer): void
     {
+        $storeId = $this->storeManager->getStore()->getId();
+
+        if ($this->config->getCustomFailedOrderStatus($storeId) != null) {
+            $status = $this->config->getCustomSuccessOrderStatus($storeId);
+        } else {
+            $status = Order::STATE_CLOSED;
+        }
+
+        if ($this->config->getCustomFailedOrderState($storeId) != null) {
+            $state = $this->config->getCustomSuccessOrderState($storeId);
+        } else {
+            $state = Order::STATE_CLOSED;
+        }
+
         try {
             $data  = $observer->getData();
             $order = $data['order'] ?? null;
@@ -53,8 +77,8 @@ class OrderCancelAfter implements ObserverInterface
             if (!empty($payment->getAdditionalInformation()['raw_details_info'])) {
                 $d = json_decode($payment->getAdditionalInformation()['raw_details_info']);
                 if ($d->state === 'FAILED') {
-                    $order->setStatus('ngenius_declined');
-                    $order->setState(Order::STATE_CLOSED);
+                    $order->setStatus($status);
+                    $order->setState($state);
                 }
             }
         } catch (\Exception $e) {

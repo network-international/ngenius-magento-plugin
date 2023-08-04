@@ -20,9 +20,13 @@
                 <can_cancel>1</can_cancel>
                 <can_edit>1</can_edit>
                 <order_status>pending_payment</order_status>
+                <payment_action>authorize</payment_action>
                 <ngenius_initial_order_status>pending_payment</ngenius_initial_order_status>
-                <success_order_state>ngenius_state</success_order_state>
-                <success_order_status>ngenius_complete</success_order_status>
+                <success_order_state>processing</success_order_state>
+                <success_order_status>processing</success_order_status>
+                <failed_order_status>closed</failed_order_status>
+                <failed_order_state>closed</failed_order_state>
+                <invoice_email>0</invoice_email>
                 <allowspecific>0</allowspecific>
                 <active>1</active>
                 <title>N-Genius Online Payment Gateway</title>

@@ -41,8 +41,11 @@ class CaptureStrategyCommand implements CommandInterface
     {
         $paymentDO = SubjectReader::readPayment($commandSubject);
         $command = $this->getCommand($paymentDO);
-        if ($command && $command !== "authorize") {
+        if ($command && $command !== "authorize" && $command !== "order") {
             $this->commandPool->get($command)->execute($commandSubject);
+        } else {
+            $payment = $paymentDO->getPayment();
+            $payment->setIsTransactionPending(true);
         }
 
         return null;

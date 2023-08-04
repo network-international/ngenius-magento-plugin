@@ -39,6 +39,10 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public const HTTP_VERSION            = 'http_version';
     public const SUCCESS_ORDER_STATE     = 'success_order_state';
     public const SUCCESS_ORDER_STATUS    = 'success_order_status';
+    public const FAILED_ORDER_STATE      = 'failed_order_state';
+    public const FAILED_ORDER_STATUS     = 'failed_order_status';
+    public const INVOICE_EMAIL           = 'invoice_email';
+    public const INITIAL_ORDER_STATUS    = 'ngenius_initial_order_status';
     /**
      * @var \NetworkInternational\NGenius\Model\CoreFactory
      */
@@ -118,11 +122,11 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     /**
      * get payment action.
      *
-     * @param int|null $storeId
+     * @param null $storeId
      *
-     * @return bool
+     * @return string
      */
-    public function getPaymentAction($storeId = null): bool
+    public function getPaymentAction($storeId = null): string
     {
         return $this->getValue(Config::PAYMENT_ACTION, $storeId);
     }
@@ -172,6 +176,18 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public function getTokenRequestURL($storeId = null)
     {
         return $this->getApiUrl($storeId) . self::TOKEN_ENDPOINT;
+    }
+
+    /**
+     * Gets initial order status setting.
+     *
+     * @param int|null $storeId
+     *
+     * @return string
+     */
+    public function getInitialOrderStatus($storeId = null)
+    {
+        return $this->getValue(self::INITIAL_ORDER_STATUS, $storeId);
     }
 
     /**
@@ -355,5 +371,41 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public function getCustomSuccessOrderStatus(int $storeId = null): ?string
     {
         return $this->getValue(Config::SUCCESS_ORDER_STATUS, $storeId);
+    }
+
+    /**
+     * Gets selected custom failed order state
+     *
+     * @param int|null $storeId
+     *
+     * @return string|null
+     */
+    public function getCustomFailedOrderState(int $storeId = null): ?string
+    {
+        return $this->getValue(Config::FAILED_ORDER_STATE, $storeId);
+    }
+
+    /**
+     * Gets selected custom failed order status
+     *
+     * @param int|null $storeId
+     *
+     * @return string|null
+     */
+    public function getCustomFailedOrderStatus(int $storeId = null): ?string
+    {
+        return $this->getValue(Config::FAILED_ORDER_STATUS, $storeId);
+    }
+
+    /**
+     * Gets Invoice Sender
+     *
+     * @param int|null $storeId
+     *
+     * @return string|null
+     */
+    public function getInvoiceSend(int $storeId = null): ?bool
+    {
+        return $this->getValue(Config::INVOICE_EMAIL, $storeId);
     }
 }
