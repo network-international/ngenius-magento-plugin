@@ -398,13 +398,13 @@ class Payment implements HttpGetActionInterface
             $storeId = $this->storeManager->getStore()->getId();
 
             if ($this->config->getCustomFailedOrderStatus($storeId) != null) {
-                $status = $this->config->getCustomSuccessOrderStatus($storeId);
+                $status = $this->config->getCustomFailedOrderStatus($storeId);
             } else {
                 $status = Order::STATE_CLOSED;
             }
 
             if ($this->config->getCustomFailedOrderState($storeId) != null) {
-                $state = $this->config->getCustomSuccessOrderState($storeId);
+                $state = $this->config->getCustomFailedOrderState($storeId);
             } else {
                 $state = Order::STATE_CLOSED;
             }
