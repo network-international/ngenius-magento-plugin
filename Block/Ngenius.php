@@ -2,14 +2,13 @@
 
 namespace NetworkInternational\NGenius\Block;
 
+use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Block\ConfigurableInfo;
 use Magento\Sales\Api\Data\OrderInterface;
-use NetworkInternational\NGenius\Controller\NGeniusOnline\Payment;
-use NetworkInternational\NGenius\Gateway\Config\Config;
 use NetworkInternational\NGenius\Gateway\Http\Client\PaymentTransaction;
 use NetworkInternational\NGenius\Gateway\Request\PaymentRequest;
 use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
@@ -71,21 +70,19 @@ class Ngenius extends ConfigurableInfo
         $this->orderFactory         = $orderInterface;
         $this->tokenRequest         = $tokenRequest;
         $this->_scopeConfig         = $scopeConfig;
-        $this->paymentRequest      = $paymentRequest;
-        $this->paymentTransaction  = $paymentTransaction;
+        $this->paymentRequest       = $paymentRequest;
+        $this->paymentTransaction   = $paymentTransaction;
     }
 
     /**
      * @return array
      * @throws CouldNotSaveException
-     * @throws LocalizedException
+     * @throws LocalizedException|Exception
      */
-    public function getPaymentUrl(): array
+    public function getPaymentUrl($ngeniusPaymentAction): array
     {
         $checkoutSession = $this->checkoutSession;
         $return = [];
-
-        $ngeniusPaymentAction = $this->_scopeConfig->getValue('payment/ngeniusonline/ngenius_payment_action');
 
         if ($incrementId = $checkoutSession->getLastRealOrderId()) {
             $order = $this->orderFactory->loadByIncrementId($incrementId);

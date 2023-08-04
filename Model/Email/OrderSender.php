@@ -33,12 +33,10 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
 
         if ($paymentCode != Config::CODE
             || !$order->isPaymentReview()
-            && $order->getStatus() !== "processing"
-            && $order->getStatus() !== "ngenius_pending"
         ) {
             $order->setSendEmail(true);
 
-            if (!$this->globalConfig->getValue('sales_email/general/async_sending') || $forceSyncMode) {
+            if (!$this->globalConfig->getValue('sales_email/general/async_sending') && $forceSyncMode) {
                 if ($this->checkAndSend($order)) {
                     $order->setEmailSent(true);
                     $this->orderResource->saveAttribute($order, ['send_email', 'email_sent']);

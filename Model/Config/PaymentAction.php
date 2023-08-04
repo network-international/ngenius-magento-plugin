@@ -10,8 +10,6 @@ use Magento\Payment\Model\MethodInterface;
  */
 class PaymentAction implements OptionSourceInterface
 {
-    public const ACTION_PURCHASE = 'purchased';
-
     /**
      * Options getter
      *
@@ -21,8 +19,8 @@ class PaymentAction implements OptionSourceInterface
     {
         return [
             [
-                'value' => MethodInterface::ACTION_ORDER,
-                'label' => __('Order'),
+                'value' => MethodInterface::ACTION_AUTHORIZE,
+                'label' => __('Authorize'),
             ]
         ];
     }

@@ -41,15 +41,23 @@ class TransactionCapture extends PaymentTransaction
                 $response['orderReference']
             );
             $orderItem     = $collection->getFirstItem();
-            $state         = isset($response['state']) ? $response['state'] : '';
 
-            if ($state == 'PARTIALLY_CAPTURED') {
-                $order_status = $this->orderStatus[6]['status'];
+            $storeId = $this->storeManager->getStore()->getId();
+
+            if ($this->config->getCustomSuccessOrderStatus($storeId) != null) {
+                $status = $this->config->getCustomSuccessOrderStatus($storeId);
             } else {
-                $order_status = $this->orderStatus[5]['status'];
+                $status = 'processing';
             }
+
+            if ($this->config->getCustomSuccessOrderState($storeId) != null) {
+                $state = $this->config->getCustomSuccessOrderState($storeId);
+            } else {
+                $state = 'processing';
+            }
+
             $orderItem->setState($state);
-            $orderItem->setStatus($order_status);
+            $orderItem->setStatus($status);
             $orderItem->setCapturedAmt($amount);
             $orderItem->save();
 
@@ -58,7 +66,7 @@ class TransactionCapture extends PaymentTransaction
                     'total_captured' => $amount,
                     'captured_amt'   => $captured_amt,
                     'state'          => $state,
-                    'order_status'   => $order_status,
+                    'order_status'   => $status,
                     'payment_id'     => $transactionId
                 ]
             ];

@@ -12,6 +12,8 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\View\LayoutFactory;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Model\Order;
+use NetworkInternational\NGenius\Gateway\Config\Config;
+use NetworkInternational\NGenius\Block\Ngenius;
 
 /**
  * Class Redirect
@@ -40,6 +42,7 @@ class Redirect implements HttpGetActionInterface
     private CartRepositoryInterface $quoteRepository;
     private ManagerInterface $messageManager;
     private ScopeConfigInterface $scopeConfig;
+    private Config $config;
 
     /**
      * Redirect constructor.
@@ -49,6 +52,8 @@ class Redirect implements HttpGetActionInterface
      * @param LayoutFactory $layoutFactory
      * @param CartRepositoryInterface $quoteRepository
      * @param ManagerInterface $messageManager
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Config $config
      */
     public function __construct(
         ResultFactory $resultRedirect,
@@ -56,14 +61,16 @@ class Redirect implements HttpGetActionInterface
         LayoutFactory $layoutFactory,
         CartRepositoryInterface $quoteRepository,
         ManagerInterface $messageManager,
-        ScopeConfigInterface $scopeConfig
+        ScopeConfigInterface $scopeConfig,
+        Config               $config,
     ) {
         $this->resultRedirect  = $resultRedirect;
         $this->checkoutSession = $checkoutSession;
         $this->layoutFactory   = $layoutFactory;
         $this->quoteRepository = $quoteRepository;
-        $this->messageManager = $messageManager;
-        $this->scopeConfig    = $scopeConfig;
+        $this->messageManager  = $messageManager;
+        $this->scopeConfig     = $scopeConfig;
+        $this->config          = $config;
     }
 
     /**
@@ -74,17 +81,24 @@ class Redirect implements HttpGetActionInterface
      */
     public function execute()
     {
+        $resultRedirectFactory = $this->resultRedirect->create(ResultFactory::TYPE_REDIRECT);
+        $order   = $this->checkoutSession->getLastRealOrder();
+
+        $storeId = $order->getStoreId();
+
+        $ngeniusPaymentAction = $this->config->getPaymentAction($storeId);
+
         $url = [];
         try {
             $block = $this->layoutFactory->create()->createBlock('NetworkInternational\NGenius\Block\Ngenius');
-            $url   = $block->getPaymentUrl();
+            $url   = $block->getPaymentUrl($ngeniusPaymentAction);
         } catch (\Exception $exception) {
             $url['exception'] = $exception;
         }
-        $initialStatus = $this->scopeConfig->getValue('payment/ngeniusonline/ngenius_initial_order_status');
-
+        
         $resultRedirectFactory = $this->resultRedirect->create(ResultFactory::TYPE_REDIRECT);
-        $order   = $this->checkoutSession->getLastRealOrder();
+        $initialStatus = $this->config->getInitialOrderStatus($storeId);
+        $order = $this->checkoutSession->getLastRealOrder();
         $order->setState($initialStatus);
         $order->setStatus($initialStatus);
         $order->save();
@@ -94,6 +108,7 @@ class Redirect implements HttpGetActionInterface
             $exception = $url['exception'];
             $this->messageManager->addExceptionMessage($exception, $exception->getMessage());
             $resultRedirectFactory->setPath(self::CARTPATH);
+            $order   = $this->checkoutSession->getLastRealOrder();
             $order->addCommentToStatusHistory($exception->getMessage());
             $order->setStatus('ngenius_failed');
             $order->setState(Order::STATE_CLOSED);

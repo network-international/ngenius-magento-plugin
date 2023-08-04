@@ -2,7 +2,6 @@
 
 namespace NetworkInternational\NGenius\Controller\NGeniusOnline;
 
-use Exception;
 use Magento\Catalog\Model\Product;
 use Magento\Checkout\Helper\Data;
 use Magento\Checkout\Model\Session;
@@ -10,7 +9,6 @@ use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\DB\TransactionFactory;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\View\Result\PageFactory;
@@ -24,6 +22,7 @@ use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\Transaction\Builder;
 use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 use Magento\Sales\Model\OrderFactory;
+use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Service\InvoiceService;
 use Magento\Store\Model\StoreManagerInterface;
 use NetworkInternational\NGenius\Gateway\Config\Config;
@@ -33,7 +32,6 @@ use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
 use NetworkInternational\NGenius\Model\CoreFactory;
 use NetworkInternational\NGenius\Setup\InstallData;
 use Psr\Log\LoggerInterface;
-use Laminas\Http\Request;
 
 /**
  * Class Payment
@@ -51,7 +49,6 @@ class Payment implements HttpGetActionInterface
     public const NGENIUS_VOIDED     = 'VOIDED';
 
     public const NGENIUS_EMBEDED = "_embedded";
-
     /**
      * @var Config
      */
@@ -142,15 +139,22 @@ class Payment implements HttpGetActionInterface
      */
     protected $checkoutSession;
 
-    protected RequestInterface $request;
-
-    protected PageFactory $pageFactory;
-
     /**
      *
      * @var ProductRepository
      */
     protected $productRepository;
+
+    /**
+     * @var RequestInterface
+     */
+    protected RequestInterface $request;
+
+    /**
+     * @var PageFactory
+     */
+    protected PageFactory $pageFactory;
+
     /**
      * @var Product
      */
@@ -187,6 +191,8 @@ class Payment implements HttpGetActionInterface
      * @param Session $checkoutSession
      * @param Product $productCollection
      * @param SerializerInterface $serializer
+     * @param Builder $_transactionBuilder
+     * @param OrderRepositoryInterface $orderRepository
      */
     public function __construct(
         ManagerInterface $messageManager,
@@ -325,15 +331,15 @@ class Payment implements HttpGetActionInterface
      * @return mixed
      * @throws \Magento\Framework\Exception\CouldNotSaveException
      * @throws \Magento\Framework\Exception\InputException
-     * @throws LocalizedException
+     * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Validation\ValidationException
      */
     public function getCapturePayment($order, $paymentResult, $paymentId, $action, $dataTable)
     {
         if ($this->ngeniusState != self::NGENIUS_FAILED) {
             if ($this->ngeniusState != self::NGENIUS_STARTED) {
-                $order->setState(InstallData::STATE);
-                $order->setStatus($this->orderStatus[1]['status'])->save();
+                $order->setState(Order::STATE_PROCESSING);
+                $order->setStatus(Order::STATE_PROCESSING)->save();
                 $this->orderSender->send($order, true);
 
                 if ($action === "AUTH") {
@@ -343,7 +349,7 @@ class Payment implements HttpGetActionInterface
                 }
                 $dataTable['status'] = $order->getStatus();
             } else {
-                $dataTable['status'] = $this->orderStatus[0]['status'];
+                $dataTable['status'] = Order::STATE_PENDING_PAYMENT;
             }
         } else {
             // Authorisation has failed - cancel order
@@ -369,7 +375,7 @@ class Payment implements HttpGetActionInterface
                 ->setOrder($order)
                 ->setTransactionId($paymentId)
                 ->setAdditionalInformation(
-                    [Transaction::RAW_DETAILS => (array)$paymentData]
+                    [Transaction::RAW_DETAILS => $paymentData]
                 )
                 ->setFailSafe(true)
                 // Build method creates the transaction and returns the object
@@ -389,10 +395,26 @@ class Payment implements HttpGetActionInterface
 
             $payment->setAdditionalInformation(['raw_details_info' => json_encode($paymentResult)]);
 
-            $dataTable['status'] = $this->orderStatus[2]['status'];
+            $storeId = $this->storeManager->getStore()->getId();
+
+            if ($this->config->getCustomFailedOrderStatus($storeId) != null) {
+                $status = $this->config->getCustomSuccessOrderStatus($storeId);
+            } else {
+                $status = Order::STATE_CLOSED;
+            }
+
+            if ($this->config->getCustomFailedOrderState($storeId) != null) {
+                $state = $this->config->getCustomSuccessOrderState($storeId);
+            } else {
+                $state = Order::STATE_CLOSED;
+            }
+
+            $dataTable['status'] = $status;
+
+            $order->setState($state);
+            $order->setStatus($status);
 
             $order->cancel()->save();
-
             $order->addStatusHistoryComment('The payment on order has failed.')
                 ->setIsCustomerNotified(false)->save();
 
@@ -460,7 +482,7 @@ class Payment implements HttpGetActionInterface
 
             $message = 'The payment has been approved and the authorized amount is ' . $formatedPrice;
 
-            $status = $this->orderStatus[4]['status'];
+            $status = Order::STATE_PROCESSING;
 
             $this->updateOrderStatus($order, $status, $message);
         }
@@ -474,7 +496,7 @@ class Payment implements HttpGetActionInterface
      * @param string $paymentId
      *
      * @return null|float
-     * @throws Exception
+     * @throws \Exception
      */
     public function orderSale($order, $paymentResult, $paymentId)
     {
@@ -515,7 +537,11 @@ class Payment implements HttpGetActionInterface
 
             $message = 'The payment has been approved and the captured amount is ' . $formatedPrice;
 
-            $status = $this->orderStatus[3]['status'];
+            if($order->canShip()) {
+                $status = Order::STATE_PROCESSING;
+            } else {
+                $status = Order::STATE_COMPLETE;
+            }
 
             $this->updateOrderStatus($order, $status, $message);
 
@@ -686,15 +712,19 @@ class Payment implements HttpGetActionInterface
             $invoice->getOrder()
         );
         $transactionSave->save();
-        try {
-            $this->invoiceSender->send($invoice);
-            $order->addStatusHistoryComment(
-                __('Notified the customer about invoice #%1.', $invoice->getIncrementId())
-            )
-                ->setIsCustomerNotified(true)->save();
-        } catch (Exception $e) {
-            $this->messageManager->addError(__('We can\'t send the invoice email right now.'));
+
+        if ($this->config->getInvoiceSend()) {
+            try {
+                $this->invoiceSender->send($invoice);
+                $order->addStatusHistoryComment(
+                    __('Notified the customer about invoice #%1.', $invoice->getIncrementId())
+                )
+                    ->setIsCustomerNotified(true)->save();
+            } catch (Exception $e) {
+                $this->messageManager->addError(__('We can\'t send the invoice email right now.'));
+            }
         }
+
     }
 
     private function updateOrderStatus($order, $status, $message): void

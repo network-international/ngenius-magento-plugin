@@ -28,8 +28,13 @@
                     <validate>required-entry</validate>
                     <config_path>payment/ngeniusonline/live_api_url</config_path>
                 </field>
+                <field id="payment_action" translate="label" type="select" sortOrder="5.5" showInDefault="1" showInWebsite="1" showInStore="0" >
+                    <label>Magento Payment Action</label>
+                    <source_model>NetworkInternational\NGenius\Model\Config\PaymentAction</source_model>
+                    <config_path>payment/ngeniusonline/payment_action</config_path>
+                </field>
                 <field id="ngenius_payment_action" translate="label" type="select" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0" >
-                    <label>Payment Action</label>
+                    <label>NGenius Payment Action</label>
                     <source_model>NetworkInternational\NGenius\Model\Config\NgeniusPaymentAction</source_model>
                     <config_path>payment/ngeniusonline/ngenius_payment_action</config_path>
                 </field>
@@ -49,6 +54,24 @@
                     <label>Successful Order Status</label>
                     <config_path>payment/ngeniusonline/success_order_status</config_path>
                     <source_model>Magento\Sales\Model\ResourceModel\Order\Status\Collection</source_model>
+                </field>
+                <field id="failed_order_state" translate="label" type="select" sortOrder="9" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Failed Order State</label>
+                    <config_path>payment/ngeniusonline/failed_order_state</config_path>
+                    <source_model>Magento\Sales\Model\ResourceModel\Order\Status\Collection</source_model>
+                </field>
+                <field id="failed_order_status" translate="label" type="select" sortOrder="9" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Failed Order Status</label>
+                    <config_path>payment/ngeniusonline/failed_order_status</config_path>
+                    <source_model>Magento\Sales\Model\ResourceModel\Order\Status\Collection</source_model>
+                </field>
+                <field id="invoice_email" translate="label" type="select" sortOrder="12" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>Send Invoice Email</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Select "Yes" to Notify Users when successful invoice is created</comment>
                 </field>
                 <field id="outlet_ref" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Outlet Reference ID</label>

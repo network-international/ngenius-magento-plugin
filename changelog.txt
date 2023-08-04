@@ -1,6 +1,12 @@
 =========================================================================
 Date                Version     Description
 =========================================================================
+2023-08-04: v1.0.8 : Add support for custom failed order statuses and states.
+                     Add option to disable sending the invoice email.
+                     Fix issues with the order status history for the initial order state.
+                     Improve reliability of payment actions on different servers.
+                     Fix issues with multi-store website scopes for settings.
+
 2023-07-31: v1.0.7 : Add support for custom success and pending order statuses and states.
 
 2023-07-24: v1.0.6 : Add type check for commands before attempting to run.

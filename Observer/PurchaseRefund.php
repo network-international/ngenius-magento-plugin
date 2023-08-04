@@ -118,7 +118,9 @@ class PurchaseRefund implements ObserverInterface
 
         $payment = $data['payment'];
 
-        $ptid = str_replace("-capture", "", $payment->getParentTransactionId() ?? "");
+        $parentTransactionId = !is_null($payment->getParentTransactionId()) ? $payment->getParentTransactionId() : '';
+
+        $ptid = str_replace("-capture", "", $parentTransactionId);
         $collection = $this->coreFactory->create()
                                         ->getCollection()
                                         ->addFieldToFilter('payment_id', $ptid);
