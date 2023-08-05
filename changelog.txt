@@ -1,6 +1,11 @@
 =========================================================================
 Date                Version     Description
 =========================================================================
+
+2023-08-05: v1.0.9 : Add option "Send Email on Order Creation".
+                     Force Magento payment action to 'authorize'.
+                     Fix order email not sending for COD payment method.
+
 2023-08-04: v1.0.8 : Add support for custom failed order statuses and states.
                      Add option to disable sending the invoice email.
                      Fix issues with the order status history for the initial order state.

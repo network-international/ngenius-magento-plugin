@@ -42,6 +42,7 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public const FAILED_ORDER_STATE      = 'failed_order_state';
     public const FAILED_ORDER_STATUS     = 'failed_order_status';
     public const INVOICE_EMAIL           = 'invoice_email';
+    public const ORDER_EMAIL             = 'order_email';
     public const INITIAL_ORDER_STATUS    = 'ngenius_initial_order_status';
     /**
      * @var \NetworkInternational\NGenius\Model\CoreFactory
@@ -407,5 +408,17 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public function getInvoiceSend(int $storeId = null): ?bool
     {
         return $this->getValue(Config::INVOICE_EMAIL, $storeId);
+    }
+
+    /**
+     * Gets Order Sender Timing
+     *
+     * @param int|null $storeId
+     *
+     * @return string|null
+     */
+    public function getEmailSend(int $storeId = null): ?bool
+    {
+        return $this->getValue(Config::ORDER_EMAIL, $storeId);
     }
 }

@@ -71,25 +71,21 @@ class ProductSaveAfter implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        $lastRealOrder = $this->checkoutSession->getLastRealOrder();
-        if (
-            $lastRealOrder->getPayment() && (($lastRealOrder->getData('state') === 'new' &&
-                                              $lastRealOrder->getData(
+         $lastRealOrder = $this->checkoutSession->getLastRealOrder();
+         if (
+             $lastRealOrder->getPayment() && $lastRealOrder->getData('state') === 'new' && ($lastRealOrder->getData(
                                                   'status'
-                                              ) === 'pending') ||
-                                             $lastRealOrder->getData(
-                                                 'status'
-                                             ) === "payment_review")
-        ) {
-            $this->checkoutSession->restoreQuote();
+                                              ) === "payment_review")
+         ) {
+             $this->checkoutSession->restoreQuote();
 
-            //Reset
-            foreach ($lastRealOrder->getAllVisibleItems() as $item) {
-                $product_id = $this->productCollection->getIdBySku($item->getSku());
-                $qty        = $item->getQtyOrdered();
-                $this->stockManagement->backItemQty($product_id, $qty, "NULL");
-            }
-        }
+             //Reset
+             foreach ($lastRealOrder->getAllVisibleItems() as $item) {
+                 $product_id = $this->productCollection->getIdBySku($item->getSku());
+                 $qty        = $item->getQtyOrdered();
+                 $this->stockManagement->backItemQty($product_id, $qty, "NULL");
+             }
+         }
 
         return true;
     }
