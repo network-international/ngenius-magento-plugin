@@ -2,7 +2,13 @@
 
 namespace NetworkInternational\NGenius\Model\Email;
 
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Payment\Helper\Data as PaymentHelper;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Address\Renderer;
+use Magento\Sales\Model\Order\Email\Container\OrderIdentity;
+use Magento\Sales\Model\Order\Email\Container\Template;
+use Magento\Sales\Model\ResourceModel\Order as OrderResource;
 use NetworkInternational\NGenius\Gateway\Config\Config;
 
 /**
@@ -10,6 +16,36 @@ use NetworkInternational\NGenius\Gateway\Config\Config;
  */
 class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
 {
+
+    private Config $config;
+
+    public function __construct(
+        Template $templateContainer,
+        OrderIdentity $identityContainer,
+        \Magento\Sales\Model\Order\Email\SenderBuilderFactory $senderBuilderFactory,
+        \Psr\Log\LoggerInterface $logger,
+        Renderer $addressRenderer,
+        PaymentHelper $paymentHelper,
+        OrderResource $orderResource,
+        \Magento\Framework\App\Config\ScopeConfigInterface $globalConfig,
+        ManagerInterface $eventManager,
+        Config $config
+    ) {
+        parent::__construct(
+            $templateContainer,
+            $identityContainer,
+            $senderBuilderFactory,
+            $logger,
+            $addressRenderer,
+            $paymentHelper,
+            $orderResource,
+            $globalConfig,
+            $eventManager
+        );
+        $this->orderResource = $orderResource;
+        $this->globalConfig  = $globalConfig;
+        $this->config        = $config;
+    }
     /**
      * Sends order email to the customer.
      *
@@ -31,12 +67,27 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
     {
         $paymentCode = $order->getPayment()->getMethodInstance()->getCode();
 
-        if ($paymentCode != Config::CODE
-            || !$order->isPaymentReview()
-        ) {
+        $storeId = $order->getStoreId();
+        $emailOnOrder = $this->config->getEmailSend($storeId);
+
+        $sendOrder = false;
+
+        if ($order->isPaymentReview()) {
+            if (!$emailOnOrder) {
+                $sendOrder = true;
+            }
+        } else {
+            if ($emailOnOrder) {
+                $sendOrder = true;
+            }
+        }
+
+        if ($paymentCode == \NetworkInternational\NGenius\Gateway\Config\Config::CODE && $sendOrder) {
+            return false;
+        } else {
             $order->setSendEmail(true);
 
-            if (!$this->globalConfig->getValue('sales_email/general/async_sending') && $forceSyncMode) {
+            if (!$this->globalConfig->getValue('sales_email/general/async_sending') || $forceSyncMode) {
                 if ($this->checkAndSend($order)) {
                     $order->setEmailSent(true);
                     $this->orderResource->saveAttribute($order, ['send_email', 'email_sent']);
@@ -48,7 +99,7 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
             }
 
             $this->orderResource->saveAttribute($order, 'send_email');
+            return false;
         }
-        return false;
     }
 }

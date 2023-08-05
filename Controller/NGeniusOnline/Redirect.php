@@ -95,12 +95,15 @@ class Redirect implements HttpGetActionInterface
         } catch (\Exception $exception) {
             $url['exception'] = $exception;
         }
-        
+
         $resultRedirectFactory = $this->resultRedirect->create(ResultFactory::TYPE_REDIRECT);
         $initialStatus = $this->config->getInitialOrderStatus($storeId);
         $order = $this->checkoutSession->getLastRealOrder();
         $order->setState($initialStatus);
         $order->setStatus($initialStatus);
+        $order->addStatusHistoryComment(
+            __('Set configured "Status of new order".')
+        );
         $order->save();
         if (isset($url['url'])) {
             $resultRedirectFactory->setUrl($url['url']);

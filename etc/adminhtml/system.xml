@@ -28,7 +28,7 @@
                     <validate>required-entry</validate>
                     <config_path>payment/ngeniusonline/live_api_url</config_path>
                 </field>
-                <field id="payment_action" translate="label" type="select" sortOrder="5.5" showInDefault="1" showInWebsite="1" showInStore="0" >
+                <field id="payment_action" translate="label" type="select" sortOrder="5.5" showInDefault="1" showInWebsite="1" showInStore="1" >
                     <label>Magento Payment Action</label>
                     <source_model>NetworkInternational\NGenius\Model\Config\PaymentAction</source_model>
                     <config_path>payment/ngeniusonline/payment_action</config_path>
@@ -67,11 +67,17 @@
                     <config_path>payment/ngeniusonline/failed_order_status</config_path>
                     <source_model>Magento\Sales\Model\ResourceModel\Order\Status\Collection</source_model>
                 </field>
-                <field id="invoice_email" translate="label" type="select" sortOrder="12" showInDefault="1"
+                <field id="order_email" translate="label" type="select" sortOrder="9.4" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>Send Email on Order Creation</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Select "Yes" to send the order email when landing on the payment page. "No" will only send the order email when payment is successful.</comment>
+                </field>
+                <field id="invoice_email" translate="label" type="select" sortOrder="9.5" showInDefault="1"
                        showInWebsite="1" showInStore="0">
                     <label>Send Invoice Email</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Select "Yes" to Notify Users when successful invoice is created</comment>
+                    <comment>Select "Yes" to send the invoice email when payment is successful.</comment>
                 </field>
                 <field id="outlet_ref" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Outlet Reference ID</label>
