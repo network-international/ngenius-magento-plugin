@@ -26,5 +26,9 @@
         <observer name="ngenius_capture_auth"
                   instance="NetworkInternational\NGenius\Observer\OrderAuthCaptured"/>
     </event>
+    <event name="sales_order_shipment_save_after">
+        <observer name="ngenius_shipped"
+                  instance="NetworkInternational\NGenius\Observer\OrderShipped"/>
+    </event>
 </config>
 

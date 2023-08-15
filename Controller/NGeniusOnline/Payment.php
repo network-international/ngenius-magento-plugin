@@ -2,6 +2,7 @@
 
 namespace NetworkInternational\NGenius\Controller\NGeniusOnline;
 
+use Exception;
 use Magento\Catalog\Model\Product;
 use Magento\Checkout\Helper\Data;
 use Magento\Checkout\Model\Session;
@@ -9,8 +10,13 @@ use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\DB\TransactionFactory;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Framework\Validation\ValidationException;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Sales\Api\Data\InvoiceInterface;
 use Magento\Sales\Api\Data\TransactionInterface;
@@ -288,10 +294,12 @@ class Payment implements HttpGetActionInterface
      * @param object $orderItem
      * @param string $orderRef
      * @param string $action
-     *
-     * @return null|boolean true
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws LocalizedException
+     * @throws ValidationException
      */
-    public function processOrder(array $paymentResult, object $orderItem, string $orderRef, string $action)
+    public function processOrder(array $paymentResult, object $orderItem, string $orderRef, string $action): void
     {
         $dataTable   = [];
         $incrementId = $orderItem->getOrderId();
@@ -311,7 +319,7 @@ class Payment implements HttpGetActionInterface
                 $dataTable['entity_id']  = $order->getId();
                 $dataTable['payment_id'] = $paymentId;
 
-                return $this->updateTable($dataTable, $orderItem);
+                $this->updateTable($dataTable, $orderItem);
             } else {
                 $orderItem->setPaymentId($paymentId);
                 $orderItem->setState($this->ngeniusState);
@@ -496,7 +504,7 @@ class Payment implements HttpGetActionInterface
      * @param string $paymentId
      *
      * @return null|float
-     * @throws \Exception
+     * @throws Exception
      */
     public function orderSale($order, $paymentResult, $paymentId)
     {
@@ -613,9 +621,9 @@ class Payment implements HttpGetActionInterface
      *
      * @param string $orderRef
      *
-     * @return array
+     * @throws NoSuchEntityException|CouldNotSaveException
      */
-    public function getResponseAPI($orderRef)
+    public function getResponseAPI($orderRef): array|bool
     {
         $storeId = $this->storeManager->getStore()->getId();
         $request = [
@@ -667,9 +675,8 @@ class Payment implements HttpGetActionInterface
     /**
      * Cron Task.
      *
-     * @return null
      */
-    public function cronTask()
+    public function cronTask(): void
     {
         $orderItems = $this->fetchOrder('state', self::NGENIUS_STARTED)->addFieldToFilter(
             'payment_id',
@@ -679,14 +686,31 @@ class Payment implements HttpGetActionInterface
             'DESC'
         );
         if ($orderItems) {
+            $this->logger->info("N-GENIUS Found " . count($orderItems) . " unprocessed order(s)");
+            $counter = 0;
             foreach ($orderItems as $orderItem) {
-                $orderRef = $orderItem->getReference();
-                $result   = $this->getResponseAPI($orderRef);
-                $embedded = self::NGENIUS_EMBEDED;
-                if ($result && isset($result[$embedded]['payment']) && is_array($result[$embedded]['payment'])) {
-                    $action        = $result['action'] ?? '';
-                    $paymentResult = $result[$embedded]['payment'][0];
-                    $this->processOrder($paymentResult, $orderItem, $orderRef, $action);
+                try {
+                    if ($counter >= 5) {
+                        $this->logger->info("N-GENIUS Breaking loop at 5 orders to avoid timeout...");
+                        break;
+                    }
+
+                    $orderRef = $orderItem->getReference();
+                    $order = $this->orderRepository->get($orderItem->getId());
+                    $incrementId = $order->getIncrementId();
+                    $this->logger->info("N-GENIUS Processing order $incrementId...");
+
+                    $result   = $this->getResponseAPI($orderRef);
+                    $embedded = self::NGENIUS_EMBEDED;
+                    if ($result && isset($result[$embedded]['payment']) && is_array($result[$embedded]['payment'])) {
+                        $action        = $result['action'] ?? '';
+                        $paymentResult = $result[$embedded]['payment'][0];
+                        $this->processOrder($paymentResult, $orderItem, $orderRef, $action);
+                    }
+
+                    $counter++;
+                } catch(Exception $e) {
+                    $this->logger->debug("N-GENIUS EXCEPTION: " . $e->getMessage());
                 }
             }
         }

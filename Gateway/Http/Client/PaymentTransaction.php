@@ -14,6 +14,7 @@ use NetworkInternational\NGenius\Gateway\Config\Config;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Payment\Gateway\Http\ClientInterface;
 use NetworkInternational\NGenius\Model\CoreFactory;
+use Magento\Sales\Api\OrderRepositoryInterface;
 
 class PaymentTransaction implements ClientInterface
 {
@@ -24,6 +25,7 @@ class PaymentTransaction implements ClientInterface
     protected Config $config;
     protected StoreManagerInterface $storeManager;
     protected CoreFactory $coreFactory;
+    protected OrderRepositoryInterface $orderRepository;
 
     /**
      * PaymentTransaction constructor.
@@ -34,6 +36,7 @@ class PaymentTransaction implements ClientInterface
      * @param Config $config
      * @param StoreManagerInterface $storeManager
      * @param CoreFactory $coreFactory
+     * @param OrderRepositoryInterface $orderRepository
      */
     public function __construct(
         Logger $logger,
@@ -42,6 +45,7 @@ class PaymentTransaction implements ClientInterface
         Config $config,
         StoreManagerInterface $storeManager,
         CoreFactory $coreFactory,
+        OrderRepositoryInterface $orderRepository
     ) {
         $this->logger = $logger;
         $this->checkoutSession = $checkoutSession;
@@ -50,6 +54,7 @@ class PaymentTransaction implements ClientInterface
         $this->config = $config;
         $this->storeManager = $storeManager;
         $this->coreFactory = $coreFactory;
+        $this->orderRepository = $orderRepository;
     }
 
     /**

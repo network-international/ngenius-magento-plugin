@@ -7,6 +7,7 @@ namespace NetworkInternational\NGenius\Gateway\Http\Client;
  */
 
 use Magento\Framework\Exception\LocalizedException;
+use NetworkInternational\NGenius\Setup\InstallData;
 
 class TransactionRefund extends PaymentTransaction
 {
@@ -44,9 +45,9 @@ class TransactionRefund extends PaymentTransaction
             $collection = $this->coreFactory->create()
                                             ->getCollection()
                                             ->addFieldToFilter('reference', $response['orderReference']);
+
             $orderItem  = $collection->getFirstItem();
 
-            $payment = $orderItem->getPayment();
             $state      = $response['state'] ?? '';
 
             if ($state === 'REVERSED') {
@@ -64,9 +65,12 @@ class TransactionRefund extends PaymentTransaction
                 $order_status = $this->orderStatus[8]['status'];
                 $orderItem->setCapturedAmt(($captured_amt - $refunded_amt) / 100);
             }
-            $orderItem->setState($state);
-            $orderItem->setStatus($order_status);
-            $orderItem->save();
+
+            if ($this->config->getIsNgeniusRefundStatus()) {
+                $orderItem->setState(InstallData::STATE);
+                $orderItem->setStatus($order_status);
+                $orderItem->save();
+            }
 
             return [
                 'result' => [

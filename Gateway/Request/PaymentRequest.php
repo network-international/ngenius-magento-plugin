@@ -143,6 +143,10 @@ class PaymentRequest implements BuilderInterface
                 'billingAddress'         => [
                     'firstName' => $order->getBillingAddress()->getFirstName(),
                     'lastName'  => $order->getBillingAddress()->getLastName(),
+                ],
+                'merchantDefinedData' => [
+                    'pluginName' => 'magento-2',
+                    'pluginVersion' => '1.1.0'
                 ]
             ],
             'method' => \Laminas\Http\Request::METHOD_POST,

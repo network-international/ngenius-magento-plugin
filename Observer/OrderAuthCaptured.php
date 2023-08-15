@@ -33,7 +33,8 @@ class OrderAuthCaptured implements ObserverInterface {
         );
         $orderItem     = $collection->getFirstItem();
 
-        if ($orderItem->getData()["action"] !== "AUTH") {
+        if ($orderItem->getData()["action"] !== "AUTH"
+            || (int)($orderItem->getData()["captured_amt"]) === 0) {
             return;
         }
 

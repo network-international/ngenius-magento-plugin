@@ -26,6 +26,7 @@
                 <success_order_status>processing</success_order_status>
                 <failed_order_status>closed</failed_order_status>
                 <failed_order_state>closed</failed_order_state>
+                <refund_statuses>0</refund_statuses>
                 <order_email>0</order_email>
                 <invoice_email>1</invoice_email>
                 <allowspecific>0</allowspecific>

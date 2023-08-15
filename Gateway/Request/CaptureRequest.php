@@ -69,7 +69,7 @@ class CaptureRequest implements BuilderInterface
      * @throws CouldNotSaveException|LocalizedException
      */
     public function build(array $buildSubject)
-    {               
+    {
         $paymentDO = SubjectReader::readPayment($buildSubject);
         $payment   = $paymentDO->getPayment();
         $order     = $paymentDO->getOrder();
@@ -103,6 +103,10 @@ class CaptureRequest implements BuilderInterface
                         'amount' => [
                             'currencyCode' => $currencyCode,
                             'value'        => $amount
+                        ],
+                        'merchantDefinedData' => [
+                            'pluginName' => 'magento-2',
+                            'pluginVersion' => '1.1.0'
                         ]
                     ],
                     'method' => \Laminas\Http\Request::METHOD_POST,
