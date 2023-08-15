@@ -67,6 +67,12 @@
                     <config_path>payment/ngeniusonline/failed_order_status</config_path>
                     <source_model>Magento\Sales\Model\ResourceModel\Order\Status\Collection</source_model>
                 </field>
+                <field id="refund_statuses" translate="label" type="select" sortOrder="9.2" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>N-Genius Refund Statuses</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Select "Yes" to set custom N-Genius refund order statuses after a successful refund.</comment>
+                </field>
                 <field id="order_email" translate="label" type="select" sortOrder="9.4" showInDefault="1"
                        showInWebsite="1" showInStore="0">
                     <label>Send Email on Order Creation</label>

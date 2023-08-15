@@ -12,6 +12,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use NetworkInternational\NGenius\Gateway\Config\Config;
 use Magento\Sales\Model\Order\Payment\Transaction\Builder;
 use NetworkInternational\NGenius\Model\CoreFactory;
+use Magento\Sales\Api\OrderRepositoryInterface;
 
 /*
  * Class TransactionVoid
@@ -36,11 +37,12 @@ class TransactionVoid extends PaymentTransaction
         Builder $transactionBuilder,
         Config $config,
         StoreManagerInterface $storeManager,
-        CoreFactory $coreFactory
+        CoreFactory $coreFactory,
+        OrderRepositoryInterface $orderRepository
     ) {
         $this->orderFactory       = $orderFactory;
         $this->transactionBuilder = $transactionBuilder;
-        parent::__construct($logger, $checkoutSession, $messageManager, $config, $storeManager, $coreFactory);
+        parent::__construct($logger, $checkoutSession, $messageManager, $config, $storeManager, $coreFactory, $orderRepository);
     }
 
     /**

@@ -85,7 +85,7 @@ class RefundRequest implements BuilderInterface
         $payment   = $paymentDO->getPayment();
         $order     = $paymentDO->getOrder();
         $storeId   = $order->getStoreId();
-        
+
         $paymentResult = json_decode($payment->getAdditionalInformation('paymentResult'));
 
         $transactionId  = $paymentResult->reference;
@@ -123,6 +123,10 @@ class RefundRequest implements BuilderInterface
                         'amount' => [
                             'currencyCode' => $currencyCode,
                             'value'        => $amount
+                        ],
+                        'merchantDefinedData' => [
+                            'pluginName' => 'magento-2',
+                            'pluginVersion' => '1.1.0'
                         ]
                     ],
                     'method' => $method,

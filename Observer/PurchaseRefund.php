@@ -6,9 +6,11 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Invoice;
+use Magento\Sales\Model\Order;
 use NetworkInternational\NGenius\Controller\NGeniusOnline\Payment;
 use Psr\Log\LoggerInterface;
 use NetworkInternational\NGenius\Model\CoreFactory;
+use NetworkInternational\NGenius\Gateway\Config\Config;
 
 class PurchaseRefund implements ObserverInterface
 {
@@ -116,6 +118,13 @@ class PurchaseRefund implements ObserverInterface
         $creditMemo = $data['creditmemo'];
         $order      = $creditMemo->getOrder();
 
+        if ($order->getPayment()->getMethodInstance()->getCode() !== Config::CODE) {
+            return;
+        }
+
+        $refunded   = $order->getTotalRefunded();
+        $total      = $order->getGrandTotal();
+
         $payment = $data['payment'];
 
         $parentTransactionId = !is_null($payment->getParentTransactionId()) ? $payment->getParentTransactionId() : '';
@@ -141,11 +150,14 @@ class PurchaseRefund implements ObserverInterface
             $order->setStatus(Payment::NGENIUS_VOIDED);
             $order->save();
         } elseif (
-             strpos(strtolower($itemState), "refunded") ||
              strpos(strtolower($itemStatus), "refunded")
         ) {
-            $order->setState('ngenius_state');
+            $order->setState($itemState);
             $order->setStatus($itemStatus);
+            $order->save();
+        } elseif ($order->getStatus() === "pending" && (float)$total > (float)$refunded) {
+            $order->setStatus(Order::STATE_PROCESSING);
+            $order->setStatus(Order::STATE_PROCESSING);
             $order->save();
         }
 
