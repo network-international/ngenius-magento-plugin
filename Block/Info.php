@@ -7,13 +7,15 @@ use Magento\Payment\Block\ConfigurableInfo;
 
 /**
  * Class Info
+ *
+ * Info Driver for Block
  */
 class Info extends ConfigurableInfo
 {
     /**
      * Returns label
      *
-     * @param string $field
+     * @param  string $field
      * @return Phrase
      */
     protected function getLabel($field)

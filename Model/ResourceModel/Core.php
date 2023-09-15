@@ -5,6 +5,8 @@ namespace NetworkInternational\NGenius\Model\ResourceModel;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 /**
+ * Resource model for custom NGenius order DB
+ *
  * Class Core
  */
 class Core extends AbstractDb

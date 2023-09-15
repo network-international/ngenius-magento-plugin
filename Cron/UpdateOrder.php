@@ -2,6 +2,7 @@
 
 namespace NetworkInternational\NGenius\Cron;
 
+use Exception;
 use Magento\Catalog\Model\Product;
 use Magento\Checkout\Helper\Data;
 use Magento\Checkout\Model\Session;
@@ -30,14 +31,51 @@ use Magento\Framework\App\State;
 use NetworkInternational\NGenius\Controller\NGeniusOnline\Payment;
 
 /**
+ * Cron Driver
+ *
  * Class UpdateOrder
  */
 class UpdateOrder
 {
+    /**
+     * @var Payment
+     */
     private Payment $ngeniusPaymentTools;
+    /**
+     * @var State
+     */
     private State $state;
+    /**
+     * @var LoggerInterface
+     */
     private LoggerInterface $logger;
 
+    /**
+     * @param ManagerInterface $messageManager
+     * @param PageFactory $pageFactory
+     * @param RequestInterface $request
+     * @param Data $checkoutHelper
+     * @param Config $config
+     * @param TokenRequest $tokenRequest
+     * @param StoreManagerInterface $storeManager
+     * @param TransferFactory $transferFactory
+     * @param TransactionFetch $transaction
+     * @param CoreFactory $coreFactory
+     * @param BuilderInterface $transactionBuilder
+     * @param ResultFactory $resultRedirect
+     * @param InvoiceService $invoiceService
+     * @param TransactionFactory $transactionFactory
+     * @param InvoiceSender $invoiceSender
+     * @param OrderSender $orderSender
+     * @param OrderFactory $orderFactory
+     * @param LoggerInterface $logger
+     * @param Session $checkoutSession
+     * @param Product $productCollection
+     * @param SerializerInterface $serializer
+     * @param Builder $_transactionBuilder
+     * @param OrderRepositoryInterface $orderRepository
+     * @param State $state
+     */
     public function __construct(
         ManagerInterface $messageManager,
         PageFactory $pageFactory,
@@ -92,24 +130,26 @@ class UpdateOrder
         $this->state = $state;
         $this->logger = $logger;
     }
+
     /**
      * Default execute function.
      *
      * @return null
+     * @throws Exception
      */
     public function execute()
     {
         $this->state->emulateAreaCode(
             Area::AREA_FRONTEND,
-                function () {
-                    try {
-                        $this->logger->info('N-GENIUS cron started');
-                        $this->ngeniusPaymentTools->cronTask();
-                        $this->logger->info('N-GENIUS cron ended');
-                    } catch (\Exception $ex) {
-                        $this->logger->error($ex->getMessage());
-                    }
+            function () {
+                try {
+                    $this->logger->info('N-GENIUS cron started');
+                    $this->ngeniusPaymentTools->cronTask();
+                    $this->logger->info('N-GENIUS cron ended');
+                } catch (Exception $ex) {
+                    $this->logger->error($ex->getMessage());
                 }
+            }
         );
     }
 }

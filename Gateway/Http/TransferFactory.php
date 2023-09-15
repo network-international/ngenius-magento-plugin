@@ -7,6 +7,7 @@
 
 namespace NetworkInternational\NGenius\Gateway\Http;
 
+use Magento\Payment\Gateway\Http\Transfer;
 use Magento\Payment\Gateway\Http\TransferBuilder;
 use Magento\Payment\Gateway\Http\TransferFactoryInterface;
 use Magento\Payment\Gateway\Http\TransferInterface;
@@ -40,10 +41,12 @@ class TransferFactory implements TransferFactoryInterface
             return $this->transferBuilder
                 ->setBody($request['request']['data'])
                 ->setMethod($request['request']['method'])
-                ->setHeaders([
+                ->setHeaders(
+                    [
                                  'Authorization' => 'Bearer ' . $request['token'],
                                  'Token'         => $request['token'],
-                             ])
+                    ]
+                )
                 ->setUri($request['request']['uri'])
                 ->build();
         }
@@ -51,16 +54,25 @@ class TransferFactory implements TransferFactoryInterface
         return null;
     }
 
-    public function tokenBuild(array $request, $apiKey)
+    /**
+     * Builds token request
+     *
+     * @param array $request
+     * @param string $apiKey
+     * @return Transfer|TransferInterface|void
+     */
+    public function tokenBuild(array $request, string $apiKey)
     {
-        if (is_array($request['request']) && isset($apiKey)) {
+        if (is_array($request['request'])) {
             return $this->transferBuilder
                 ->setBody($request['request']['data'])
                 ->setMethod($request['request']['method'])
-                ->setHeaders([
+                ->setHeaders(
+                    [
                                  'Authorization' => 'Basic ' . $apiKey,
                                  'Content-Type'  => 'application/vnd.ni-identity.v1+json',
-                             ])
+                    ]
+                )
                 ->setUri($request['request']['uri'])
                 ->build();
         }

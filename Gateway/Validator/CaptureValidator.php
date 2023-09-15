@@ -11,6 +11,8 @@ use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 use Magento\Sales\Model\OrderFactory;
 
 /**
+ * Validate and processes order capture
+ *
  * Class CaptureValidator
  */
 class CaptureValidator extends AbstractValidator
@@ -29,8 +31,8 @@ class CaptureValidator extends AbstractValidator
      * CaptureValidator constructor.
      *
      * @param ResultInterfaceFactory $resultFactory
-     * @param BuilderInterface $transactionBuilder
-     * @param OrderFactory $orderFactory
+     * @param BuilderInterface       $transactionBuilder
+     * @param OrderFactory           $orderFactory
      */
     public function __construct(
         ResultInterfaceFactory $resultFactory,
@@ -70,15 +72,15 @@ class CaptureValidator extends AbstractValidator
             ];
             $payment->setTransactionId($response['result']['payment_id']);
             $transaction = $this->transactionBuilder->setPayment($payment)
-                                                    ->setOrder($order)
-                                                    ->setTransactionId($response['result']['payment_id'])
-                                                    ->setAdditionalInformation(
-                                                        [Transaction::RAW_DETAILS => (array)$paymentData]
-                                                    )
-                                                    ->setFailSafe(true)
-                                                    ->build(
-                                                        Transaction::TYPE_CAPTURE
-                                                    );
+                ->setOrder($order)
+                ->setTransactionId($response['result']['payment_id'])
+                ->setAdditionalInformation(
+                    [Transaction::RAW_DETAILS => (array)$paymentData]
+                )
+                ->setFailSafe(true)
+                ->build(
+                    Transaction::TYPE_CAPTURE
+                );
             $payment->addTransactionCommentsToOrder($transaction, null);
             $payment->save();
             $order->addStatusToHistory(

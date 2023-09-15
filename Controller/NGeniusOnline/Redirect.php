@@ -2,6 +2,7 @@
 
 namespace NetworkInternational\NGenius\Controller\NGeniusOnline;
 
+use Exception;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Checkout\Model\Session;
@@ -17,6 +18,8 @@ use NetworkInternational\NGenius\Block\Ngenius;
 
 /**
  * Class Redirect
+ *
+ * The Redirect Controller responsible for sending the customer to the NGenius Payment Page
  */
 class Redirect implements HttpGetActionInterface
 {
@@ -35,25 +38,34 @@ class Redirect implements HttpGetActionInterface
     /**
      * @var LayoutFactory
      */
-    protected $layoutFactory;
+    protected LayoutFactory $layoutFactory;
     /**
-     * @var \Magento\Quote\Api\CartRepositoryInterface
+     * @var CartRepositoryInterface
      */
     private CartRepositoryInterface $quoteRepository;
+    /**
+     * @var ManagerInterface
+     */
     private ManagerInterface $messageManager;
+    /**
+     * @var ScopeConfigInterface
+     */
     private ScopeConfigInterface $scopeConfig;
+    /**
+     * @var Config
+     */
     private Config $config;
 
     /**
      * Redirect constructor.
      *
-     * @param ResultFactory $resultRedirect
-     * @param Session $checkoutSession
-     * @param LayoutFactory $layoutFactory
+     * @param ResultFactory           $resultRedirect
+     * @param Session                 $checkoutSession
+     * @param LayoutFactory           $layoutFactory
      * @param CartRepositoryInterface $quoteRepository
-     * @param ManagerInterface $messageManager
-     * @param ScopeConfigInterface $scopeConfig
-     * @param Config $config
+     * @param ManagerInterface        $messageManager
+     * @param ScopeConfigInterface    $scopeConfig
+     * @param Config                  $config
      */
     public function __construct(
         ResultFactory $resultRedirect,
@@ -90,9 +102,9 @@ class Redirect implements HttpGetActionInterface
 
         $url = [];
         try {
-            $block = $this->layoutFactory->create()->createBlock('NetworkInternational\NGenius\Block\Ngenius');
+            $block = $this->layoutFactory->create()->createBlock(Ngenius::class);
             $url   = $block->getPaymentUrl($ngeniusPaymentAction);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $url['exception'] = $exception;
         }
 
@@ -123,6 +135,8 @@ class Redirect implements HttpGetActionInterface
     }
 
     /**
+     * Cart restore
+     *
      * @throws NoSuchEntityException
      */
     public function restoreQuote()

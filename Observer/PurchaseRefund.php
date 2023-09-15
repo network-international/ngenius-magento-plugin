@@ -2,6 +2,7 @@
 
 namespace NetworkInternational\NGenius\Observer;
 
+use Exception;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\Order\Creditmemo;
@@ -100,7 +101,7 @@ class PurchaseRefund implements ObserverInterface
     private CoreFactory $coreFactory;
 
     /**
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Psr\Log\LoggerInterface                        $logger
      * @param \NetworkInternational\NGenius\Model\CoreFactory $coreFactory
      */
     public function __construct(LoggerInterface $logger, CoreFactory $coreFactory)
@@ -127,12 +128,12 @@ class PurchaseRefund implements ObserverInterface
 
         $payment = $data['payment'];
 
-        $parentTransactionId = !is_null($payment->getParentTransactionId()) ? $payment->getParentTransactionId() : '';
+        $parentTransactionId = $payment->getParentTransactionId() !== null ? $payment->getParentTransactionId() : '';
 
         $ptid = str_replace("-capture", "", $parentTransactionId);
         $collection = $this->coreFactory->create()
-                                        ->getCollection()
-                                        ->addFieldToFilter('payment_id', $ptid);
+            ->getCollection()
+            ->addFieldToFilter('payment_id', $ptid);
 
         $orderItem  = $collection->getFirstItem();
         $itemStatus = $orderItem->getData('status') ?? "";
@@ -146,11 +147,10 @@ class PurchaseRefund implements ObserverInterface
             $this->setCreditMemoValues($creditMemo, $invoice);
             $this->setInvoiceRefundedValues($creditMemo, $invoice);
             $this->setCreditMemoRefundedQuantities($creditMemo, $invoice);
-            $this->setOrderRefundedQuantities($order, $creditMemo, true);
+            $this->setOrderRefundedQuantities($order, $creditMemo);
             $order->setStatus(Payment::NGENIUS_VOIDED);
             $order->save();
-        } elseif (
-             strpos(strtolower($itemStatus), "refunded")
+        } elseif (str_contains(strtolower($itemStatus), "refunded")
         ) {
             $order->setState($itemState);
             $order->setStatus($itemStatus);
@@ -160,16 +160,16 @@ class PurchaseRefund implements ObserverInterface
             $order->setStatus(Order::STATE_PROCESSING);
             $order->save();
         }
-
-
     }
 
     /**
-     * @param \Magento\Sales\Model\Order\Creditmemo $creditMemo
-     * @param \Magento\Sales\Model\Order\Invoice $invoice
+     * Updates credit memo for order
+     *
+     * @param Creditmemo $creditMemo
+     * @param Invoice $invoice
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     private function setCreditMemoValues(Creditmemo &$creditMemo, Invoice $invoice): void
     {
@@ -181,11 +181,13 @@ class PurchaseRefund implements ObserverInterface
     }
 
     /**
-     * @param \Magento\Sales\Model\Order\Creditmemo $creditMemo
-     * @param \Magento\Sales\Model\Order\Invoice $invoice
+     * Updates refund data for invoice
+     *
+     * @param Creditmemo $creditMemo
+     * @param Invoice $invoice
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     private function setInvoiceRefundedValues(Creditmemo $creditMemo, Invoice &$invoice): void
     {
@@ -195,17 +197,22 @@ class PurchaseRefund implements ObserverInterface
     }
 
     /**
-     * @param \Magento\Sales\Model\Order\Creditmemo $creditMemo
-     * @param \Magento\Sales\Model\Order\Invoice $invoice
+     * Updates credit memo refund item data
+     *
+     * @param Creditmemo $creditMemo
+     * @param Invoice $invoice
      *
      * @return void
+     * @throws Exception
      */
     private function setCreditMemoRefundedQuantities(Creditmemo &$creditMemo, Invoice $invoice): void
     {
         $creditMemoItems = $creditMemo->getItems();
         $invoiceItems    = $invoice->getItems();
 
-        for ($k = 0; $k < count($creditMemoItems); $k++) {
+        $creditMemoItemCount = count($creditMemoItems);
+
+        for ($k = 0; $k < $creditMemoItemCount; $k++) {
             $creditMemoItem = $creditMemoItems[$k];
             $creditMemoItem->setCreditMemo($creditMemo);
             $invoiceItem = $invoiceItems->fetchItem();
@@ -226,6 +233,8 @@ class PurchaseRefund implements ObserverInterface
     }
 
     /**
+     * Updates the order items(s)
+     *
      * @param array $creditMemoItems
      *
      * @return void
@@ -248,13 +257,14 @@ class PurchaseRefund implements ObserverInterface
     }
 
     /**
-     * @param $order
-     * @param $creditMemo
-     * @param $online
+     * Sets order refund quantities
+     *
+     * @param Order $order
+     * @param Creditmemo $creditMemo
      *
      * @return void
      */
-    private function setOrderRefundedQuantities(&$order, Creditmemo $creditMemo, bool $online = true): void
+    private function setOrderRefundedQuantities(Order &$order, Creditmemo $creditMemo): void
     {
         $baseOrderRefund = round($creditMemo->getBaseGrandTotal(), 4);
         $orderRefund     = round($creditMemo->getGrandTotal(), 4);
@@ -295,17 +305,10 @@ class PurchaseRefund implements ObserverInterface
         $order->setDiscountRefunded($order->getDiscountRefunded() + $creditMemo->getDiscountAmount());
         $order->setBaseDiscountRefunded($order->getBaseDiscountRefunded() + $creditMemo->getBaseDiscountAmount());
 
-        if ($online) {
-            $order->setTotalOnlineRefunded($order->getTotalOnlineRefunded() + $creditMemo->getGrandTotal());
-            $order->setBaseTotalOnlineRefunded(
-                $order->getBaseTotalOnlineRefunded() + $creditMemo->getBaseGrandTotal()
-            );
-        } else {
-            $order->setTotalOfflineRefunded($order->getTotalOfflineRefunded() + $creditMemo->getGrandTotal());
-            $order->setBaseTotalOfflineRefunded(
-                $order->getBaseTotalOfflineRefunded() + $creditMemo->getBaseGrandTotal()
-            );
-        }
+        $order->setTotalOnlineRefunded($order->getTotalOnlineRefunded() + $creditMemo->getGrandTotal());
+        $order->setBaseTotalOnlineRefunded(
+            $order->getBaseTotalOnlineRefunded() + $creditMemo->getBaseGrandTotal()
+        );
 
         $order->setBaseTotalInvoicedCost(
             $order->getBaseTotalInvoicedCost() - $creditMemo->getBaseCost()

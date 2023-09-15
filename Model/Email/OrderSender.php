@@ -2,23 +2,43 @@
 
 namespace NetworkInternational\NGenius\Model\Email;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Payment\Helper\Data as PaymentHelper;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Address\Renderer;
 use Magento\Sales\Model\Order\Email\Container\OrderIdentity;
 use Magento\Sales\Model\Order\Email\Container\Template;
+use Magento\Sales\Model\Order\Email\SenderBuilderFactory;
 use Magento\Sales\Model\ResourceModel\Order as OrderResource;
 use NetworkInternational\NGenius\Gateway\Config\Config;
+use Psr\Log\LoggerInterface;
 
 /**
+ * Customise order email confirmation
+ *
  * Class OrderSender
  */
 class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
 {
 
+    /**
+     * @var Config
+     */
     private Config $config;
 
+    /**
+     * @param Template $templateContainer
+     * @param OrderIdentity $identityContainer
+     * @param SenderBuilderFactory $senderBuilderFactory
+     * @param LoggerInterface $logger
+     * @param Renderer $addressRenderer
+     * @param PaymentHelper $paymentHelper
+     * @param OrderResource $orderResource
+     * @param ScopeConfigInterface $globalConfig
+     * @param ManagerInterface $eventManager
+     * @param Config $config
+     */
     public function __construct(
         Template $templateContainer,
         OrderIdentity $identityContainer,
@@ -58,7 +78,7 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
      * corresponding cron job.
      *
      * @param Order $order
-     * @param bool $forceSyncMode
+     * @param bool  $forceSyncMode
      *
      * @return bool
      * @throws \Magento\Framework\Exception\LocalizedException

@@ -32,9 +32,9 @@ class OrderCancelAfter implements ObserverInterface
     protected $storeManager;
 
     /**
-     * @param Config $config
+     * @param Config                                                 $config
      * @param \Magento\Sales\Model\Order\Payment\Transaction\Builder $transactionBuilder
-     * @param StoreManagerInterface $storeManager
+     * @param StoreManagerInterface                                  $storeManager
      */
 
     public function __construct(Config $config, Builder $transactionBuilder, StoreManagerInterface $storeManager)
@@ -45,10 +45,12 @@ class OrderCancelAfter implements ObserverInterface
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
+     * Handles cancelled and declined transactions
+     *
+     * @param Observer $observer
      *
      * @return void
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function execute(Observer $observer): void
     {

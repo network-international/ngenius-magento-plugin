@@ -2,6 +2,10 @@
 Date                Version     Description
 =========================================================================
 
+2023-09-15: v1.1.1 : Align code with Magento code standards (phpcs).
+                     Fix duplicate mails notification when re-loading the order success page.
+                     Fix store credit reverting twice on certain order status settings.
+
 2023-08-15: v1.1.0 : Fix order status not changing to 'Complete' when shipped using 'Capture Offline'.
                      Fix cron query timing out.
                      Allow N-Genius Refund Statuses to be configurable.

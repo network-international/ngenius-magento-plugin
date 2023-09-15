@@ -6,6 +6,7 @@ use Magento\Backend\Block\Widget\Grid\Container;
 
 /**
  * Class Core
+ * The core driver for the NGenius Report
  */
 class Core extends Container
 {

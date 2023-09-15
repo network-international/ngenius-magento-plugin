@@ -10,6 +10,8 @@ use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 use Magento\Sales\Model\OrderFactory;
 
 /**
+ * Validate and processes voided order
+ *
  * Class VoidValidator
  */
 class VoidValidator extends AbstractValidator
@@ -28,8 +30,8 @@ class VoidValidator extends AbstractValidator
      * VoidValidator constructor.
      *
      * @param ResultInterfaceFactory $resultFactory
-     * @param BuilderInterface $transactionBuilder
-     * @param OrderFactory $orderFactory
+     * @param BuilderInterface       $transactionBuilder
+     * @param OrderFactory           $orderFactory
      */
     public function __construct(
         ResultInterfaceFactory $resultFactory,
@@ -44,7 +46,7 @@ class VoidValidator extends AbstractValidator
     /**
      * Performs validation of result code
      *
-     * @param array $validationSubject
+     * @param  array $validationSubject
      * @return ResultInterface|null
      */
     public function validate(array $validationSubject)
@@ -74,8 +76,6 @@ class VoidValidator extends AbstractValidator
                 }
             }
         } catch (\Exception $ex) {
-            echo $ex->getMessage();
-            die;
             return $this->createResult(
                 false,
                 [__('Missing response data.')]

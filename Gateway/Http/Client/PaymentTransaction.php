@@ -6,8 +6,9 @@ use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Payment\Gateway\Http\TransferInterface;
 use Magento\Payment\Model\Method\Logger;
-use NetworkInternational\NGenius\Setup\InstallData;
+use NetworkInternational\NGenius\Setup\Patch\Data\DataPatch;
 use Ngenius\NgeniusCommon\NgeniusHTTPCommon;
 use Ngenius\NgeniusCommon\NgeniusHTTPTransfer;
 use NetworkInternational\NGenius\Gateway\Config\Config;
@@ -18,24 +19,48 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 
 class PaymentTransaction implements ClientInterface
 {
-    private $logger;
+    /**
+     * @var Logger
+     */
+    private Logger $logger;
+    /**
+     * @var Session
+     */
     protected Session $checkoutSession;
+    /**
+     * @var array|\string[][]
+     */
     protected array $orderStatus;
+    /**
+     * @var ManagerInterface
+     */
     protected ManagerInterface $messageManager;
+    /**
+     * @var Config
+     */
     protected Config $config;
+    /**
+     * @var StoreManagerInterface
+     */
     protected StoreManagerInterface $storeManager;
+    /**
+     * @var CoreFactory
+     */
     protected CoreFactory $coreFactory;
+    /**
+     * @var OrderRepositoryInterface
+     */
     protected OrderRepositoryInterface $orderRepository;
 
     /**
      * PaymentTransaction constructor.
      *
-     * @param Logger $logger
-     * @param Session $checkoutSession
-     * @param ManagerInterface $messageManager
-     * @param Config $config
-     * @param StoreManagerInterface $storeManager
-     * @param CoreFactory $coreFactory
+     * @param Logger                   $logger
+     * @param Session                  $checkoutSession
+     * @param ManagerInterface         $messageManager
+     * @param Config                   $config
+     * @param StoreManagerInterface    $storeManager
+     * @param CoreFactory              $coreFactory
      * @param OrderRepositoryInterface $orderRepository
      */
     public function __construct(
@@ -49,7 +74,7 @@ class PaymentTransaction implements ClientInterface
     ) {
         $this->logger = $logger;
         $this->checkoutSession = $checkoutSession;
-        $this->orderStatus = InstallData::getStatuses();
+        $this->orderStatus = DataPatch::getStatuses();
         $this->messageManager = $messageManager;
         $this->config = $config;
         $this->storeManager = $storeManager;
@@ -60,11 +85,11 @@ class PaymentTransaction implements ClientInterface
     /**
      * Places request to gateway. Returns result as ENV array
      *
+     * @param array|TransferInterface $requestData
      * @return array|null
      * @throws NoSuchEntityException
-     * @throws Exception
      */
-    public function placeRequest($requestData): ?array
+    public function placeRequest(array|TransferInterface $requestData): ?array
     {
         if (is_array($requestData)) {
             $token = $requestData['token'];
@@ -104,7 +129,7 @@ class PaymentTransaction implements ClientInterface
     /**
      * Processing of API response
      *
-     * @param string $responseEnc
+     * @param  string $responseEnc
      * @return null|array
      * @throws Exception
      */
@@ -128,9 +153,9 @@ class PaymentTransaction implements ClientInterface
 
             $this->checkoutSession->setPaymentURL($response->_links->payment->href);
             return ['payment_url' => $response->_links->payment->href];
-        }elseif (isset($response->errors)) {
+        } elseif (isset($response->errors)) {
             return ['message' => 'Message: ' . $response->message . ': ' . $response->errors[0]->message];
-        }  else {
+        } else {
             return null;
         }
     }

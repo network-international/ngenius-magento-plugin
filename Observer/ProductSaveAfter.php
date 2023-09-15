@@ -2,10 +2,13 @@
 
 namespace NetworkInternational\NGenius\Observer;
 
+use Magento\Catalog\Model\Product;
+use Magento\Checkout\Model\Session;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\CatalogInventory\Api\StockManagementInterface;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Framework\ObjectManagerInterface;
 
 class ProductSaveAfter implements ObserverInterface
 {
@@ -44,7 +47,12 @@ class ProductSaveAfter implements ObserverInterface
     protected $productCollection;
 
     /**
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param ObjectManagerInterface $objectManager
+     * @param Session $checkoutSession
+     * @param ProductQty $productQty
+     * @param StockManagementInterface $stockManagement
+     * @param StockRegistryInterface $stockRegistry
+     * @param Product $productCollection
      */
     public function __construct(
         \Magento\Framework\ObjectManagerInterface $objectManager,
@@ -63,7 +71,7 @@ class ProductSaveAfter implements ObserverInterface
     }
 
     /**
-     * customer register event handler
+     * Customer register event handler
      *
      * @param \Magento\Framework\Event\Observer $observer
      *
@@ -72,20 +80,19 @@ class ProductSaveAfter implements ObserverInterface
     public function execute(Observer $observer)
     {
          $lastRealOrder = $this->checkoutSession->getLastRealOrder();
-         if (
-             $lastRealOrder->getPayment() && $lastRealOrder->getData('state') === 'new' && ($lastRealOrder->getData(
-                                                  'status'
-                                              ) === "payment_review")
-         ) {
-             $this->checkoutSession->restoreQuote();
+        if ($lastRealOrder->getPayment() && $lastRealOrder->getData('state') === 'new' && ($lastRealOrder->getData(
+            'status'
+        ) === "payment_review")
+        ) {
+            $this->checkoutSession->restoreQuote();
 
-             //Reset
-             foreach ($lastRealOrder->getAllVisibleItems() as $item) {
-                 $product_id = $this->productCollection->getIdBySku($item->getSku());
-                 $qty        = $item->getQtyOrdered();
-                 $this->stockManagement->backItemQty($product_id, $qty, "NULL");
-             }
-         }
+            //Reset
+            foreach ($lastRealOrder->getAllVisibleItems() as $item) {
+                $product_id = $this->productCollection->getIdBySku($item->getSku());
+                $qty        = $item->getQtyOrdered();
+                $this->stockManagement->backItemQty($product_id, $qty, "NULL");
+            }
+        }
 
         return true;
     }

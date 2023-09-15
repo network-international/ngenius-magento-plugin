@@ -4,6 +4,8 @@ namespace NetworkInternational\NGenius\Controller\Adminhtml\Core;
 
 /**
  * Class Report
+ *
+ * Provides the client with the NGenius Report Resource
  */
 class Report extends \Magento\Backend\App\Action
 {
@@ -15,7 +17,7 @@ class Report extends \Magento\Backend\App\Action
     /**
      * Report constructor.
      *
-     * @param Context $context
+     * @param Context     $context
      * @param PageFactory $resultPageFactory
      */
     public function __construct(

@@ -6,6 +6,8 @@ namespace NetworkInternational\NGenius\Gateway\Http\Client;
  * Class TransactionCapture
  */
 
+use Magento\Framework\Exception\NoSuchEntityException;
+
 class TransactionCapture extends PaymentTransaction
 {
     /**
@@ -14,6 +16,7 @@ class TransactionCapture extends PaymentTransaction
      * @param array $responseEnc
      *
      * @return null|array
+     * @throws NoSuchEntityException
      */
     protected function postProcess($responseEnc): ?array
     {
@@ -26,10 +29,9 @@ class TransactionCapture extends PaymentTransaction
             $amount           = $transaction_data['amount'];
             $lastTransaction  = $transaction_data['last_transaction'];
             $captured_amt     = 0;
-            if (
-                isset($lastTransaction['state']) &&
-                ($lastTransaction['state'] == 'SUCCESS') &&
-                isset($lastTransaction['amount']['value'])
+            if (isset($lastTransaction['state'])
+                && ($lastTransaction['state'] == 'SUCCESS')
+                && isset($lastTransaction['amount']['value'])
             ) {
                 $captured_amt = $lastTransaction['amount']['value'] / 100;
             }
@@ -74,25 +76,29 @@ class TransactionCapture extends PaymentTransaction
     }
 
     /**
-     * @param $lastTransaction
+     * Retrieves transaction link
      *
-     * @return false|mixed|string
+     * @param array $lastTransaction
+     *
+     * @return false|string
      */
-    public function getTransactionId($lastTransaction)
+    public function getTransactionId(array $lastTransaction): bool|string
     {
         if (isset($lastTransaction['_links']['self']['href'])) {
             $transactionArr = explode('/', $lastTransaction['_links']['self']['href']);
 
             return end($transactionArr);
         }
+        return false;
     }
 
     /**
-     * @param $response
+     * Gets NGenius payment data
      *
+     * @param array $response
      * @return array
      */
-    public function getTransactionData($response)
+    public function getTransactionData(array $response): array
     {
         $embedded        = "_embedded";
         $cnpcapture      = "cnp:capture";
@@ -101,19 +107,18 @@ class TransactionCapture extends PaymentTransaction
         if (isset($response[$embedded][$cnpcapture]) && is_array($response[$embedded][$cnpcapture])) {
             $lastTransaction = end($response[$embedded][$cnpcapture]);
             foreach ($response[$embedded][$cnpcapture] as $capture) {
-                if (
-                    isset($capture['state']) &&
-                    ($capture['state'] == 'SUCCESS') &&
-                    isset($capture['amount']['value'])
+                if (isset($capture['state'])
+                    && ($capture['state'] == 'SUCCESS')
+                    && isset($capture['amount']['value'])
                 ) {
                     $amount += $capture['amount']['value'];
                 }
             }
         }
 
-        return array(
+        return [
             'amount'           => $amount,
             'last_transaction' => $lastTransaction
-        );
+        ];
     }
 }

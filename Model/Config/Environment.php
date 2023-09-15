@@ -5,6 +5,8 @@ namespace NetworkInternational\NGenius\Model\Config;
 use Magento\Framework\Option\ArrayInterface;
 
 /**
+ * Pay environment setting model
+ *
  * Class Environment
  */
 class Environment implements ArrayInterface

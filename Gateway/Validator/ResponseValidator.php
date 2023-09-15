@@ -7,6 +7,8 @@ use Magento\Payment\Gateway\Validator\ResultInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 
 /**
+ * Validate and process NGenius payment response
+ *
  * Class ResponseValidator
  */
 class ResponseValidator extends AbstractValidator
@@ -14,7 +16,7 @@ class ResponseValidator extends AbstractValidator
     /**
      * Performs validation of result code
      *
-     * @param array $validationSubject
+     * @param  array $validationSubject
      * @return ResultInterface
      */
     public function validate(array $validationSubject)

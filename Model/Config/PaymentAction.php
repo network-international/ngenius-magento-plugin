@@ -6,6 +6,8 @@ use Magento\Framework\Data\OptionSourceInterface;
 use Magento\Payment\Model\MethodInterface;
 
 /**
+ * Magento2 payment action model
+ *
  * Class PaymentAction
  */
 class PaymentAction implements OptionSourceInterface
