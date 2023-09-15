@@ -146,7 +146,7 @@ class TransactionRefund extends PaymentTransaction
      * @param array $lastTransaction
      * @return array
      */
-    public function getRefundData(array $lastTransaction): array
+    public function getRefundData(mixed $lastTransaction): mixed
     {
         $refund_data = [];
         if (isset($lastTransaction['state'])
