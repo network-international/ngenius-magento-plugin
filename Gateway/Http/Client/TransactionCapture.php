@@ -98,7 +98,7 @@ class TransactionCapture extends PaymentTransaction
      * @param array $response
      * @return array
      */
-    public function getTransactionData(array $response): array
+    public function getTransactionData(mixed $response): mixed
     {
         $embedded        = "_embedded";
         $cnpcapture      = "cnp:capture";
