@@ -29,6 +29,17 @@ class TransactionVoid extends PaymentTransaction
      */
     private Builder $transactionBuilder;
 
+    /**
+     * @param Logger $logger
+     * @param Session $checkoutSession
+     * @param ManagerInterface $messageManager
+     * @param OrderFactory $orderFactory
+     * @param Builder $transactionBuilder
+     * @param Config $config
+     * @param StoreManagerInterface $storeManager
+     * @param CoreFactory $coreFactory
+     * @param OrderRepositoryInterface $orderRepository
+     */
     public function __construct(
         Logger $logger,
         Session $checkoutSession,
@@ -42,7 +53,15 @@ class TransactionVoid extends PaymentTransaction
     ) {
         $this->orderFactory       = $orderFactory;
         $this->transactionBuilder = $transactionBuilder;
-        parent::__construct($logger, $checkoutSession, $messageManager, $config, $storeManager, $coreFactory, $orderRepository);
+        parent::__construct(
+            $logger,
+            $checkoutSession,
+            $messageManager,
+            $config,
+            $storeManager,
+            $coreFactory,
+            $orderRepository
+        );
     }
 
     /**
@@ -73,8 +92,8 @@ class TransactionVoid extends PaymentTransaction
             return [];
         } else {
             $collection = $this->coreFactory->create()
-                                            ->getCollection()
-                                            ->addFieldToFilter('reference', $response['orderReference']);
+                ->getCollection()
+                ->addFieldToFilter('reference', $response['orderReference']);
 
             $orderItem = $collection->getFirstItem();
 
@@ -93,9 +112,9 @@ class TransactionVoid extends PaymentTransaction
             $payment->setAmountAuthorized(0.00);
 
             $transaction = $trans->setPayment($payment)
-                                 ->setOrder($order)
-                                 ->setFailSafe(true)
-                                 ->build(TransactionInterface::TYPE_VOID);
+                ->setOrder($order)
+                ->setFailSafe(true)
+                ->build(TransactionInterface::TYPE_VOID);
 
             $message = __('The authorised amount has been voided');
             $payment->addTransactionCommentsToOrder($transaction, $message);

@@ -6,16 +6,29 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use NetworkInternational\NGenius\Model\CoreFactory;
 
-class OrderAuthCaptured implements ObserverInterface {
+class OrderAuthCaptured implements ObserverInterface
+{
 
+    /**
+     * @var CoreFactory
+     */
     protected CoreFactory $coreFactory;
 
+    /**
+     * @param CoreFactory $coreFactory
+     */
     public function __construct(
         CoreFactory $coreFactory,
     ) {
         $this->coreFactory = $coreFactory;
     }
 
+    /**
+     * Order capture observer to set custom order statuses accordingly
+     *
+     * @param Observer $observer
+     * @return void
+     */
     public function execute(Observer $observer)
     {
         $order      = $observer->getInvoice()->getOrder();
@@ -34,7 +47,8 @@ class OrderAuthCaptured implements ObserverInterface {
         $orderItem     = $collection->getFirstItem();
 
         if ($orderItem->getData()["action"] !== "AUTH"
-            || (int)($orderItem->getData()["captured_amt"]) === 0) {
+            || (int)($orderItem->getData()["captured_amt"]) === 0
+        ) {
             return;
         }
 

@@ -6,6 +6,8 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use NetworkInternational\NGenius\Model\CoreFactory;
 
 /**
+ * NGenius config class to define the plugin's abilities
+ *
  * Class Config
  */
 class Config extends \Magento\Payment\Gateway\Config\Config
@@ -46,23 +48,28 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public const INITIAL_ORDER_STATUS    = 'ngenius_initial_order_status';
     public const REFUND_STATUS           = 'refund_statuses';
     /**
-     * @var \NetworkInternational\NGenius\Model\CoreFactory
+     * @var CoreFactory
      */
     private CoreFactory $coreFactory;
 
+    /**
+     * @param ScopeConfigInterface $scopeConfig
+     * @param CoreFactory $coreFactory
+     * @param string $pathPattern
+     * @param ?string $methodCode
+     */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         CoreFactory $coreFactory,
-        $pathPattern = \Magento\Payment\Gateway\Config\Config::DEFAULT_PATH_PATTERN,
-        $methodCode = null,
+        string $pathPattern = \Magento\Payment\Gateway\Config\Config::DEFAULT_PATH_PATTERN,
+        ?string $methodCode = null,
     ) {
         \Magento\Payment\Gateway\Config\Config::__construct($scopeConfig, $methodCode, $pathPattern);
         $this->coreFactory = $coreFactory;
     }
 
     /**
-     * Gets value of configured environment.
-     * Possible values: live or uat.
+     * Gets value of configured environment. Possible values: live or uat.
      *
      * @param int|null $storeId
      *
@@ -122,13 +129,13 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     }
 
     /**
-     * get payment action.
+     * Get payment action.
      *
-     * @param null $storeId
+     * @param ?int $storeId
      *
      * @return string
      */
-    public function getPaymentAction($storeId = null): string
+    public function getPaymentAction(?int $storeId = null): string
     {
         return $this->getValue(Config::PAYMENT_ACTION, $storeId);
     }
@@ -196,11 +203,11 @@ class Config extends \Magento\Payment\Gateway\Config\Config
      * Gets order request URL.
      *
      * @param int|null $storeId
-     * @param $action
-     *
+     * @param string $action
+     * @param string $currencyCode
      * @return string
      */
-    public function getOrderRequestURL(?int $storeId, $action, $currencyCode)
+    public function getOrderRequestURL(?int $storeId, string $action, string $currencyCode): string
     {
         $outlet2ReferenceId         = $this->getValue(self::OUTLET_REF_2, $storeId);
         $outlet2ReferenceCurrencies = $this->getValue(self::OUTLET_REF_2_CURRENCIES, $storeId) ?? '';
@@ -224,11 +231,12 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     /**
      * Gets fetch URL.
      *
+     * @param string $orderRef
      * @param int|null $storeId
      *
      * @return string
      */
-    public function getFetchRequestURL($orderRef, $storeId = null)
+    public function getFetchRequestURL(string $orderRef, ?int $storeId = null): string
     {
         $endpoint = sprintf(
             $this->getValue(Config::FETCH_ENDPOINT, $storeId),
@@ -254,11 +262,13 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     /**
      * Gets capture URL.
      *
+     * @param string $orderRef
+     * @param string $paymentRef
      * @param int|null $storeId
      *
      * @return string
      */
-    public function getOrderCaptureURL($orderRef, $paymentRef, $storeId = null)
+    public function getOrderCaptureURL(string $orderRef, string $paymentRef, ?int $storeId = null)
     {
         $endpoint = sprintf(
             $this->getValue(Config::CAPTURE_ENDPOINT, $storeId),
@@ -273,12 +283,19 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     /**
      * Gets refund URL.
      *
+     * @param string $orderRef
+     * @param string $paymentRef
+     * @param string $transactionId
      * @param int|null $storeId
      *
      * @return string
      */
-    public function getOrderRefundURL($orderRef, $paymentRef, $transactionId, $storeId = null)
-    {
+    public function getOrderRefundURL(
+        string $orderRef,
+        string $paymentRef,
+        string $transactionId,
+        ?int $storeId = null
+    ): string {
         $endpoint = sprintf(
             $this->getValue(Config::REFUND_ENDPOINT, $storeId),
             $this->getTrueOutletReferenceId($orderRef, $storeId),
@@ -293,11 +310,13 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     /**
      * Gets void URL.
      *
+     * @param string $orderRef
+     * @param string $paymentRef
      * @param int|null $storeId
      *
      * @return string
      */
-    public function getOrderVoidURL($orderRef, $paymentRef, $storeId = null)
+    public function getOrderVoidURL(string $orderRef, string $paymentRef, int $storeId = null): string
     {
         $endpoint = sprintf(
             $this->getValue(Config::VOID_ENDPOINT, $storeId),
@@ -312,12 +331,14 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     }
 
     /**
-     * @param $orderRef
-     * @param $storeId
+     * Gets true outlet ID for order from Magento DB
+     *
+     * @param string $orderRef
+     * @param int|null $storeId
      *
      * @return string
      */
-    private function getTrueOutletReferenceId($orderRef, $storeId): string
+    private function getTrueOutletReferenceId(string $orderRef, ?int $storeId): string
     {
         $collection   = $this->coreFactory->create()->getCollection()->addFieldToFilter(
             'reference',

@@ -3,8 +3,11 @@
 namespace NetworkInternational\NGenius\Model;
 
 use Magento\Framework\Model\AbstractModel;
+use NetworkInternational\NGenius\Model\ResourceModel\Core as ResourceCore;
 
 /**
+ * Resource model core initializer
+ *
  * Class Core
  */
 class Core extends AbstractModel
@@ -16,6 +19,6 @@ class Core extends AbstractModel
      */
     protected function _construct()
     {
-        $this->_init('NetworkInternational\NGenius\Model\ResourceModel\Core');
+        $this->_init(ResourceCore::class);
     }
 }

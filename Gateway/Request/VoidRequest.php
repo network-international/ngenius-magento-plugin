@@ -29,12 +29,11 @@ class VoidRequest implements BuilderInterface
      */
     protected $storeManager;
 
-
     /**
      * VoidRequest constructor.
      *
-     * @param Config $config
-     * @param TokenRequest $tokenRequest
+     * @param Config                $config
+     * @param TokenRequest          $tokenRequest
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(

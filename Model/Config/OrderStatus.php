@@ -3,8 +3,11 @@
 namespace NetworkInternational\NGenius\Model\Config;
 
 use Magento\Framework\Option\ArrayInterface;
+use NetworkInternational\NGenius\Setup\Patch\Data\DataPatch;
 
 /**
+ * NGenius order statuses model
+ *
  * Class OrderStatus
  */
 class OrderStatus implements ArrayInterface
@@ -17,7 +20,7 @@ class OrderStatus implements ArrayInterface
     public function toOptionArray()
     {
 
-        $status = \NetworkInternational\NGenius\Setup\InstallData::getStatuses();
+        $status = DataPatch::getStatuses();
 
         return [['value' => $status[0]['status'], 'label' => __($status[0]['label'])]];
     }

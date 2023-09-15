@@ -9,6 +9,8 @@ use Magento\Payment\Gateway\Helper\ContextHelper;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 
 /**
+ * Payment process strategy for orders
+ *
  * Class CaptureStrategyCommand
  */
 class CaptureStrategyCommand implements CommandInterface
@@ -54,7 +56,7 @@ class CaptureStrategyCommand implements CommandInterface
     /**
      * Gets command name.
      *
-     * @param PaymentDataObjectInterface $paymentDO
+     * @param  PaymentDataObjectInterface $paymentDO
      * @return string
      */
     private function getCommand(PaymentDataObjectInterface $paymentDO)

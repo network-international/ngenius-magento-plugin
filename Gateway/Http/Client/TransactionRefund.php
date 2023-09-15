@@ -7,7 +7,7 @@ namespace NetworkInternational\NGenius\Gateway\Http\Client;
  */
 
 use Magento\Framework\Exception\LocalizedException;
-use NetworkInternational\NGenius\Setup\InstallData;
+use NetworkInternational\NGenius\Setup\Patch\Data\DataPatch;
 
 class TransactionRefund extends PaymentTransaction
 {
@@ -43,8 +43,8 @@ class TransactionRefund extends PaymentTransaction
             $transactionId     = $refund_data['transactionId'] ?? $response['reference'];
 
             $collection = $this->coreFactory->create()
-                                            ->getCollection()
-                                            ->addFieldToFilter('reference', $response['orderReference']);
+                ->getCollection()
+                ->addFieldToFilter('reference', $response['orderReference']);
 
             $orderItem  = $collection->getFirstItem();
 
@@ -67,7 +67,7 @@ class TransactionRefund extends PaymentTransaction
             }
 
             if ($this->config->getIsNgeniusRefundStatus()) {
-                $orderItem->setState(InstallData::STATE);
+                $orderItem->setState(DataPatch::STATE);
                 $orderItem->setStatus($order_status);
                 $orderItem->save();
             }
@@ -85,11 +85,13 @@ class TransactionRefund extends PaymentTransaction
     }
 
     /**
-     * @param $response
+     * Gets NGenius payment refund amount from response
+     *
+     * @param array $response
      *
      * @return array
      */
-    public function getRefundAmountData($response): array
+    public function getRefundAmountData(array $response): array
     {
         $embedded        = "_embedded";
         $cnpcapture      = "cnp:capture";
@@ -112,34 +114,46 @@ class TransactionRefund extends PaymentTransaction
             $refunded_amt = $response['amount']['value'];
         }
 
-        return array(
+        return [
             'refunded_amt'    => $refunded_amt,
             'captured_amt'    => $captured_amt,
             'lastTransaction' => $lastTransaction,
-        );
-    }
-
-    public function getAmountValue($refund, $refunded_amt)
-    {
-        if (isset($refund['state']) && ($refund['state'] == 'SUCCESS'  ||
-                (isset($refund['_links'][self::NGENIUS_CUP_RESULTS]) && $refund['state'] == 'REQUESTED')) && isset($refund['amount']['value'])) {
-            return $refund['amount']['value'];
-        }
+        ];
     }
 
     /**
-     * @param $lastTransaction
+     * Gets refund amount value from response
      *
+     * @param array $refund
+     * @param float $refunded_amt
+     * @return float|null
+     */
+    public function getAmountValue(array $refund, float $refunded_amt): ?float
+    {
+        if (isset($refund['state'])
+            && ($refund['state'] == 'SUCCESS'
+                || (isset($refund['_links'][self::NGENIUS_CUP_RESULTS])
+                    && $refund['state'] === 'REQUESTED')) && isset($refund['amount']['value'])
+        ) {
+            return (float)$refund['amount']['value'];
+        }
+        return null;
+    }
+
+    /**
+     * Gets NGenius payment refund data from response
+     *
+     * @param array $lastTransaction
      * @return array
      */
-    public function getRefundData($lastTransaction): array
+    public function getRefundData(array $lastTransaction): array
     {
-        $refund_data = array();
-        if (
-            isset($lastTransaction['state']) &&
-            ($lastTransaction['state'] == 'SUCCESS'  ||
-                (isset($lastTransaction['_links'][self::NGENIUS_CUP_RESULTS]) && $lastTransaction['state'] == 'REQUESTED')) &&
-            isset($lastTransaction['amount']['value'])
+        $refund_data = [];
+        if (isset($lastTransaction['state'])
+            && ($lastTransaction['state'] === 'SUCCESS'
+            || (isset($lastTransaction['_links'][self::NGENIUS_CUP_RESULTS])
+                    && $lastTransaction['state'] === 'REQUESTED'))
+            && isset($lastTransaction['amount']['value'])
         ) {
             $refund_data['last_refunded_amt'] = $lastTransaction['amount']['value'] / 100;
         }

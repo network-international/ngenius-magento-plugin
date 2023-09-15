@@ -11,6 +11,8 @@ use Ngenius\NgeniusCommon\NgeniusHTTPCommon;
 use Ngenius\NgeniusCommon\NgeniusHTTPTransfer;
 
 /**
+ * Class responsible for request token generation
+ *
  * Class TokenRequest
  */
 class TokenRequest
@@ -24,7 +26,6 @@ class TokenRequest
      * @var Logger
      */
     private $logger;
-
 
     /**
      * @var TransferFactory
@@ -43,6 +44,7 @@ class TokenRequest
      * @param Logger $logger
      * @param TransferFactory $transferFactory
      * ManagerInterface $messageManager
+     * @param ManagerInterface $messageManager
      */
     public function __construct(
         Config $config,

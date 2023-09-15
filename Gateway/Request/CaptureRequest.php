@@ -14,6 +14,8 @@ use Magento\Payment\Helper\Formatter;
 use Laminas\Http\Request;
 
 /**
+ * Request builder for payment captures
+ *
  * Class CaptureRequest
  */
 class CaptureRequest implements BuilderInterface
@@ -43,10 +45,10 @@ class CaptureRequest implements BuilderInterface
     /**
      * CaptureRequest constructor.
      *
-     * @param Config $config
-     * @param TokenRequest $tokenRequest
+     * @param Config                $config
+     * @param TokenRequest          $tokenRequest
      * @param StoreManagerInterface $storeManager
-     * @param CoreFactory $coreFactory
+     * @param CoreFactory           $coreFactory
      */
     public function __construct(
         Config $config,
@@ -82,8 +84,8 @@ class CaptureRequest implements BuilderInterface
         }
 
         $collection = $this->coreFactory->create()
-                                        ->getCollection()
-                                        ->addFieldToFilter('order_id', $order->getOrderIncrementId());
+            ->getCollection()
+            ->addFieldToFilter('order_id', $order->getOrderIncrementId());
         $orderItem  = $collection->getFirstItem();
 
         $amount   = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
@@ -106,7 +108,7 @@ class CaptureRequest implements BuilderInterface
                         ],
                         'merchantDefinedData' => [
                             'pluginName' => 'magento-2',
-                            'pluginVersion' => '1.1.0'
+                            'pluginVersion' => '1.1.1'
                         ]
                     ],
                     'method' => \Laminas\Http\Request::METHOD_POST,

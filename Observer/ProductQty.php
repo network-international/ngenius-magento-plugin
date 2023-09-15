@@ -19,7 +19,7 @@ class ProductQty
     /**
      * Prepare array with information about used product qty and product stock item
      *
-     * @param array $relatedItems
+     * @param  array $relatedItems
      * @return array
      */
     public function getProductQty($relatedItems)
@@ -46,7 +46,7 @@ class ProductQty
      * Adds stock item qty to $items (creates new entry or increments existing one)
      *
      * @param QuoteItem $quoteItem
-     * @param array &$items
+     * @param array $items
      * @return void
      */
     protected function _addItemToQtyArray(QuoteItem $quoteItem, &$items)

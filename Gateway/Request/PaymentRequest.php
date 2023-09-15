@@ -43,11 +43,11 @@ class PaymentRequest implements BuilderInterface
     /**
      * PaymentRequest constructor.
      *
-     * @param Config $config
-     * @param TokenRequest $tokenRequest
+     * @param Config                $config
+     * @param TokenRequest          $tokenRequest
      * @param StoreManagerInterface $storeManager
-     * @param Session $checkoutSession
-     * @param UrlInterface $urlBuilder
+     * @param Session               $checkoutSession
+     * @param UrlInterface          $urlBuilder
      */
     public function __construct(
         Config $config,
@@ -66,7 +66,7 @@ class PaymentRequest implements BuilderInterface
     /**
      * Builds ENV request
      *
-     * @param array $buildSubject
+     * @param  array $buildSubject
      * @throws CouldNotSaveException
      * @return array
      */
@@ -93,7 +93,7 @@ class PaymentRequest implements BuilderInterface
     /**
      * Set Table Data
      *
-     * @param object $order
+     * @param  object $order
      * @return null
      */
     protected function setTableData($order)
@@ -112,7 +112,7 @@ class PaymentRequest implements BuilderInterface
      * @param object $order
      * @param int $storeId
      * @param float $amount
-     * @param $action
+     * @param string $action
      * @return array
      */
     public function getBuildArray($order, $storeId, $amount, $action): array
@@ -146,7 +146,7 @@ class PaymentRequest implements BuilderInterface
                 ],
                 'merchantDefinedData' => [
                     'pluginName' => 'magento-2',
-                    'pluginVersion' => '1.1.0'
+                    'pluginVersion' => '1.1.1'
                 ]
             ],
             'method' => \Laminas\Http\Request::METHOD_POST,

@@ -7,6 +7,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Payment\Block\ConfigurableInfo;
 use Magento\Sales\Api\Data\OrderInterface;
 use NetworkInternational\NGenius\Gateway\Http\Client\PaymentTransaction;
@@ -46,17 +47,20 @@ class Ngenius extends ConfigurableInfo
      */
     protected $_scopeConfig;
 
+    /**
+     * @var array|string[]
+     */
     private array $allowedActions = ['PURCHASE', 'AUTH', 'SALE'];
 
     /**
      * Ngenius constructor.
      *
-     * @param OrderInterface $orderInterface
-     * @param TokenRequest $tokenRequest
+     * @param OrderInterface       $orderInterface
+     * @param TokenRequest         $tokenRequest
      * @param ScopeConfigInterface $scopeConfig
-     * @param Session $checkoutSession
-     * @param PaymentRequest $paymentRequest
-     * @param PaymentTransaction $paymentTransaction
+     * @param Session              $checkoutSession
+     * @param PaymentRequest       $paymentRequest
+     * @param PaymentTransaction   $paymentTransaction
      */
     public function __construct(
         OrderInterface       $orderInterface,
@@ -75,11 +79,14 @@ class Ngenius extends ConfigurableInfo
     }
 
     /**
+     * Retrieves Pay Page URL
+     *
+     * @param  string $ngeniusPaymentAction
      * @return array
      * @throws CouldNotSaveException
-     * @throws LocalizedException|Exception
+     * @throws NoSuchEntityException
      */
-    public function getPaymentUrl($ngeniusPaymentAction): array
+    public function getPaymentUrl(string $ngeniusPaymentAction): array
     {
         $checkoutSession = $this->checkoutSession;
         $return = [];

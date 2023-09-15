@@ -6,6 +6,8 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Checkout\Model\Session;
 
 /**
+ * NGenius checkout info observer implementation
+ *
  * Class Standard
  */
 class Standard implements ObserverInterface
@@ -23,7 +25,7 @@ class Standard implements ObserverInterface
     /**
      * Standard constructor.
      *
-     * @param Session $checkoutSession
+     * @param Session                                     $checkoutSession
      * @param \Magento\Framework\Message\ManagerInterface $messageManager
      */
     public function __construct(

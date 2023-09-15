@@ -3,6 +3,7 @@
 namespace NetworkInternational\NGenius\Gateway\Request;
 
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
@@ -14,6 +15,8 @@ use Ngenius\NgeniusCommon\NgeniusHTTPCommon;
 use Ngenius\NgeniusCommon\NgeniusHTTPTransfer;
 
 /**
+ * Class responsible for generating refund request structure
+ *
  * Class RefundRequest
  */
 class RefundRequest implements BuilderInterface
@@ -55,6 +58,7 @@ class RefundRequest implements BuilderInterface
      * @param TokenRequest $tokenRequest
      * @param StoreManagerInterface $storeManager
      * @param CoreFactory $coreFactory
+     * @param OrderInterface $orderInterface
      */
     public function __construct(
         Config $config,
@@ -126,7 +130,7 @@ class RefundRequest implements BuilderInterface
                         ],
                         'merchantDefinedData' => [
                             'pluginName' => 'magento-2',
-                            'pluginVersion' => '1.1.0'
+                            'pluginVersion' => '1.1.1'
                         ]
                     ],
                     'method' => $method,
@@ -139,14 +143,17 @@ class RefundRequest implements BuilderInterface
     }
 
     /**
-     * @param $token
-     * @param $order_ref
+     * Retrieves the refund object response and processes refund URL
+     *
+     * @param string $token
+     * @param string $order_ref
      *
      * @return array Get response from api for order ref code end
      * Get response from api for order ref code end
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
-    public function getRefundUrl($token, $order_ref): array
+    public function getRefundUrl(string $token, string $order_ref): array
     {
         $method = "POST";
 
@@ -163,22 +170,22 @@ class RefundRequest implements BuilderInterface
         $payment = $response->_embedded->payment[0];
 
         $refund_url = "";
-        if ($payment->state == "PURCHASED") {
+        if ($payment->state === "PURCHASED" || $payment->state === "PARTIALLY_REFUNDED") {
             if (isset($payment->_links->$cnpcancel->href)) {
                 $refund_url = $payment->_links->$cnpcancel->href;
                 $method     = 'PUT';
             } elseif (isset($payment->_links->$cnprefund->href)) {
                 $refund_url = $payment->_links->$cnprefund->href;
             }
-        } elseif ($payment->state == "CAPTURED") {
-            if (isset($payment->_embedded->$cnpcapture[0]->_links->$cnprefund->href)) {
-                $refund_url = $payment->_embedded->$cnpcapture[0]->_links->$cnprefund->href;
-            } elseif(isset($payment->_embedded->$cnpcapture[0]->_links->self->href)) {
-                $refund_url = $payment->_embedded->$cnpcapture[0]->_links->self->href . '/refund';
+        } elseif ($payment->state === "CAPTURED") {
+            if (isset($payment->_embedded->{$cnpcapture}[0]->_links->$cnprefund->href)) {
+                $refund_url = $payment->_embedded->{$cnpcapture}[0]->_links->$cnprefund->href;
+            } elseif (isset($payment->_embedded->{$cnpcapture}[0]->_links->self->href)) {
+                $refund_url = $payment->_embedded->{$cnpcapture}[0]->_links->self->href . '/refund';
             }
         } else {
-            if (isset($payment->_links->$cnprefund->href)  || isset($payment->_embedded->$cnpcapture[0]->_links->$cnprefund->href)) {
-                $refund_url = $payment->_embedded->$cnpcapture[0]->_links->$cnprefund->href;
+            if (isset($payment->_embedded->{$cnpcapture}[0]->_links->$cnprefund->href)) {
+                $refund_url = $payment->_embedded->{$cnpcapture}[0]->_links->$cnprefund->href;
             }
         }
 
@@ -189,9 +196,17 @@ class RefundRequest implements BuilderInterface
         return [$refund_url, $method, null];
     }
 
+    /**
+     * Gets API response
+     *
+     * @param string $token
+     * @param string $order_ref
+     * @return mixed
+     * @throws NoSuchEntityException
+     */
     public function getResponseApi(
-        $token,
-        $order_ref
+        string $token,
+        string $order_ref
     ) {
         $url = $this->config->getFetchRequestURL($order_ref);
 
