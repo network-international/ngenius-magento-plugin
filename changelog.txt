@@ -2,6 +2,9 @@
 Date                Version     Description
 =========================================================================
 
+2023-10-31: v1.1.2 : Fix schema index attribute causing deprecated functionality warning.
+                     Add support for BHD and KWD currency decimals.
+
 2023-09-15: v1.1.1 : Align code with Magento code standards (phpcs).
                      Fix duplicate mail notifications when re-loading the order success page.
                      Fix store credit reverting twice on certain order status settings.

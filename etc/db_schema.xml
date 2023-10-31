@@ -15,7 +15,7 @@
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="nid"/>
         </constraint>
-        <index referenceId="UNIQUE_NGENIUS_ONLINE_ENTITY_ID_ORDER_ID">
+        <index indexType="btree" referenceId="UNIQUE_NGENIUS_ONLINE_ENTITY_ID_ORDER_ID">
             <column name="entity_id"/>
             <column name="order_id"/>
         </index>

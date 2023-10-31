@@ -93,7 +93,7 @@ class CaptureRequest implements BuilderInterface
 
         if ($currencyCode === "UGX") {
             $amount = $amount / 100;
-        } elseif ($currencyCode === "OMR") {
+        } elseif (in_array($currencyCode, ['KWD', 'BHD', 'OMR'])) {
             $amount = $amount * 10;
         }
 
@@ -108,7 +108,7 @@ class CaptureRequest implements BuilderInterface
                         ],
                         'merchantDefinedData' => [
                             'pluginName' => 'magento-2',
-                            'pluginVersion' => '1.1.1'
+                            'pluginVersion' => '1.1.2'
                         ]
                     ],
                     'method' => \Laminas\Http\Request::METHOD_POST,
