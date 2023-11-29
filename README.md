@@ -14,7 +14,7 @@ For more detailed instructions on setting up the N-Genius Magento plugin, please
 
 - Download ***ngenius-magento-plugin-master.zip*** and unzip it to a directory on your local machine.
 - Use an FTP tool (such as *FileZilla*) to upload the contents of ```ngenius-magento-plugin-master``` directory to the ```app\code\NetworkInternational\NGenius\```directory of your Magento installation.
-- From the Magento root directory, install N-Genius dependencies using ```composer require ngenius/ngenius-common:1.0.2```.
+- From the Magento root directory, install N-Genius dependencies using ```composer require ngenius/ngenius-common:v1.0.6```.
 
 ### Magento Build Steps
 
