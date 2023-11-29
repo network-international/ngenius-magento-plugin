@@ -38,6 +38,7 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public const REFUND_ENDPOINT         = 'refund_endpoint';
     public const VOID_ENDPOINT           = 'void_auth_endpoint';
     public const DEBUG                   = 'debug';
+    public const DEBUG_CRON              = 'debug_cron';
     public const HTTP_VERSION            = 'http_version';
     public const SUCCESS_ORDER_STATE     = 'success_order_state';
     public const SUCCESS_ORDER_STATUS    = 'success_order_status';
@@ -257,6 +258,18 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public function isDebugOn($storeId = null)
     {
         return (bool)$this->getValue(Config::DEBUG, $storeId);
+    }
+
+    /**
+     * Checks debug cron on.
+     *
+     * @param int|null $storeId
+     *
+     * @return string
+     */
+    public function isDebugCron($storeId = null)
+    {
+        return (bool)$this->getValue(Config::DEBUG_CRON, $storeId);
     }
 
     /**

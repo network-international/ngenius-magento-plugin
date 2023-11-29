@@ -7,6 +7,7 @@ namespace NetworkInternational\NGenius\Gateway\Http\Client;
  */
 
 use Magento\Framework\Exception\NoSuchEntityException;
+use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 
 class TransactionCapture extends PaymentTransaction
 {
@@ -29,15 +30,18 @@ class TransactionCapture extends PaymentTransaction
             $amount           = $transaction_data['amount'];
             $lastTransaction  = $transaction_data['last_transaction'];
             $captured_amt     = 0;
+            $currencyCode     = $lastTransaction['amount']['currencyCode'] ?? '';
+            $amount           = ($amount > 0) ? ValueFormatter::formatOrderStatusAmount($currencyCode, ($amount / 100)) : 0;
+
             if (isset($lastTransaction['state'])
                 && ($lastTransaction['state'] == 'SUCCESS')
                 && isset($lastTransaction['amount']['value'])
             ) {
-                $captured_amt = $lastTransaction['amount']['value'] / 100;
+                $value        = $lastTransaction['amount']['value'] / 100;
+                $captured_amt = ValueFormatter::formatOrderStatusAmount($currencyCode, $value);
             }
 
             $transactionId = $this->getTransactionId($lastTransaction);
-            $amount        = ($amount > 0) ? $amount / 100 : 0;
             $collection    = $this->coreFactory->create()->getCollection()->addFieldToFilter(
                 'reference',
                 $response['orderReference']
@@ -52,11 +56,7 @@ class TransactionCapture extends PaymentTransaction
                 $status = 'processing';
             }
 
-            if ($this->config->getCustomSuccessOrderState($storeId) != null) {
-                $state = $this->config->getCustomSuccessOrderState($storeId);
-            } else {
-                $state = 'processing';
-            }
+            $state = $response['state'];
 
             $orderItem->setState($state);
             $orderItem->setStatus($status);

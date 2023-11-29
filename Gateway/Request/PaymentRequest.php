@@ -10,6 +10,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Helper\Formatter;
+use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 
 class PaymentRequest implements BuilderInterface
 {
@@ -119,18 +120,14 @@ class PaymentRequest implements BuilderInterface
     {
         $currencyCode = $order->getOrderCurrencyCode();
 
-        if ($currencyCode === "UGX") {
-            $amount = $amount / 100;
-        } elseif (in_array($currencyCode, ['KWD', 'BHD', 'OMR'])) {
-            $amount = $amount * 10;
-        }
+        ValueFormatter::formatCurrencyAmount($currencyCode, $amount);
 
         return [
             'data'   => [
                 'action'                 => $action,
                 'amount'                 => [
                     'currencyCode' => $currencyCode,
-                    'value'        => $amount
+                    'value'        => (int)$amount
                 ],
                 'merchantAttributes'     => [
                     'redirectUrl'          => $this->urlBuilder->getDirectUrl(
@@ -146,7 +143,7 @@ class PaymentRequest implements BuilderInterface
                 ],
                 'merchantDefinedData' => [
                     'pluginName' => 'magento-2',
-                    'pluginVersion' => '1.1.2'
+                    'pluginVersion' => '1.1.3'
                 ]
             ],
             'method' => \Laminas\Http\Request::METHOD_POST,

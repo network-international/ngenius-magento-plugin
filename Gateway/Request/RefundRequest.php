@@ -11,8 +11,10 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use NetworkInternational\NGenius\Gateway\Config\Config;
 use NetworkInternational\NGenius\Model\CoreFactory;
+use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 use Ngenius\NgeniusCommon\NgeniusHTTPCommon;
 use Ngenius\NgeniusCommon\NgeniusHTTPTransfer;
+use Ngenius\NgeniusCommon\Processor\RefundProcessor;
 
 /**
  * Class responsible for generating refund request structure
@@ -109,11 +111,7 @@ class RefundRequest implements BuilderInterface
         $amount = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
         $currencyCode = $order_details->getOrderCurrencyCode();
 
-        if ($currencyCode === "UGX") {
-            $amount = $amount / 100;
-        } elseif (in_array($currencyCode, ['KWD', 'BHD', 'OMR'])) {
-            $amount = $amount * 10;
-        }
+        ValueFormatter::formatCurrencyAmount($currencyCode, $amount);
 
         if ($error) {
             throw new LocalizedException(__($error));
@@ -130,7 +128,7 @@ class RefundRequest implements BuilderInterface
                         ],
                         'merchantDefinedData' => [
                             'pluginName' => 'magento-2',
-                            'pluginVersion' => '1.1.2'
+                            'pluginVersion' => '1.1.3'
                         ]
                     ],
                     'method' => $method,
@@ -163,31 +161,9 @@ class RefundRequest implements BuilderInterface
             return [null, null, $response->errors[0]->message];
         }
 
-        $cnpcapture = "cnp:capture";
-        $cnprefund  = 'cnp:refund';
-        $cnpcancel  = 'cnp:cancel';
-
         $payment = $response->_embedded->payment[0];
 
-        $refund_url = "";
-        if ($payment->state === "PURCHASED" || $payment->state === "PARTIALLY_REFUNDED") {
-            if (isset($payment->_links->$cnpcancel->href)) {
-                $refund_url = $payment->_links->$cnpcancel->href;
-                $method     = 'PUT';
-            } elseif (isset($payment->_links->$cnprefund->href)) {
-                $refund_url = $payment->_links->$cnprefund->href;
-            }
-        } elseif ($payment->state === "CAPTURED") {
-            if (isset($payment->_embedded->{$cnpcapture}[0]->_links->$cnprefund->href)) {
-                $refund_url = $payment->_embedded->{$cnpcapture}[0]->_links->$cnprefund->href;
-            } elseif (isset($payment->_embedded->{$cnpcapture}[0]->_links->self->href)) {
-                $refund_url = $payment->_embedded->{$cnpcapture}[0]->_links->self->href . '/refund';
-            }
-        } else {
-            if (isset($payment->_embedded->{$cnpcapture}[0]->_links->$cnprefund->href)) {
-                $refund_url = $payment->_embedded->{$cnpcapture}[0]->_links->$cnprefund->href;
-            }
-        }
+        $refund_url = RefundProcessor::extractUrl($payment);
 
         if (!$refund_url) {
             throw new LocalizedException(__('Refund data not found.'));

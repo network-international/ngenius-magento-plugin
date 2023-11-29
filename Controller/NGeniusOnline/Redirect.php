@@ -93,7 +93,6 @@ class Redirect implements HttpGetActionInterface
      */
     public function execute()
     {
-        $resultRedirectFactory = $this->resultRedirect->create(ResultFactory::TYPE_REDIRECT);
         $order   = $this->checkoutSession->getLastRealOrder();
 
         $storeId = $order->getStoreId();

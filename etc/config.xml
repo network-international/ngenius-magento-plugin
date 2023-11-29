@@ -30,6 +30,7 @@
                 <order_email>0</order_email>
                 <invoice_email>1</invoice_email>
                 <allowspecific>0</allowspecific>
+                <debug_cron>0</debug_cron>
                 <active>1</active>
                 <title>N-Genius Online Payment Gateway</title>
                 <environment>uat</environment>

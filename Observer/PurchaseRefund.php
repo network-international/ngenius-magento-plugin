@@ -12,6 +12,7 @@ use NetworkInternational\NGenius\Controller\NGeniusOnline\Payment;
 use Psr\Log\LoggerInterface;
 use NetworkInternational\NGenius\Model\CoreFactory;
 use NetworkInternational\NGenius\Gateway\Config\Config;
+use Magento\Store\Model\StoreManagerInterface;
 
 class PurchaseRefund implements ObserverInterface
 {
@@ -96,18 +97,34 @@ class PurchaseRefund implements ObserverInterface
      */
     private LoggerInterface $logger;
     /**
-     * @var \NetworkInternational\NGenius\Model\CoreFactory
+     * @var CoreFactory
      */
     private CoreFactory $coreFactory;
+    /**
+     * @var Config
+     */
+    private Config $config;
+    /**
+     * @var StoreManagerInterface
+     */
+    private StoreManagerInterface $storeManager;
 
     /**
-     * @param \Psr\Log\LoggerInterface                        $logger
-     * @param \NetworkInternational\NGenius\Model\CoreFactory $coreFactory
+     * @param LoggerInterface $logger
+     * @param CoreFactory $coreFactory
+     * @param Config $config
+     * @param StoreManagerInterface $storeManager
      */
-    public function __construct(LoggerInterface $logger, CoreFactory $coreFactory)
-    {
-        $this->logger      = $logger;
-        $this->coreFactory = $coreFactory;
+    public function __construct(
+        LoggerInterface $logger,
+        CoreFactory $coreFactory,
+        Config $config,
+        StoreManagerInterface $storeManager
+    ) {
+        $this->logger        = $logger;
+        $this->coreFactory   = $coreFactory;
+        $this->config        = $config;
+        $this->storeManager  = $storeManager;
     }
 
     /**
@@ -123,9 +140,6 @@ class PurchaseRefund implements ObserverInterface
             return;
         }
 
-        $refunded   = $order->getTotalRefunded();
-        $total      = $order->getGrandTotal();
-
         $payment = $data['payment'];
 
         $parentTransactionId = $payment->getParentTransactionId() !== null ? $payment->getParentTransactionId() : '';
@@ -139,6 +153,8 @@ class PurchaseRefund implements ObserverInterface
         $itemStatus = $orderItem->getData('status') ?? "";
         $itemState = $orderItem->getData('state') ?? "";
 
+        $storeId = $this->storeManager->getStore()->getId();
+
         if ($itemState === 'REVERSED') {
             $this->logger->info('Credit Memo: ' . json_encode($creditMemo));
             $invoice = $creditMemo->getInvoice();
@@ -149,17 +165,11 @@ class PurchaseRefund implements ObserverInterface
             $this->setCreditMemoRefundedQuantities($creditMemo, $invoice);
             $this->setOrderRefundedQuantities($order, $creditMemo);
             $order->setStatus(Payment::NGENIUS_VOIDED);
-            $order->save();
-        } elseif (str_contains(strtolower($itemStatus), "refunded")
-        ) {
+        } elseif ($this->config->getIsNgeniusRefundStatus($storeId)) {
             $order->setState($itemState);
             $order->setStatus($itemStatus);
-            $order->save();
-        } elseif ($order->getStatus() === "pending" && (float)$total > (float)$refunded) {
-            $order->setStatus(Order::STATE_PROCESSING);
-            $order->setStatus(Order::STATE_PROCESSING);
-            $order->save();
         }
+        $order->save();
     }
 
     /**

@@ -10,7 +10,6 @@ use NetworkInternational\NGenius\Gateway\Config\Config;
 
 class OrderShipped implements ObserverInterface
 {
-
     /**
      * @var CoreFactory
      */

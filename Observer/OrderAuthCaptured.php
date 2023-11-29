@@ -8,7 +8,6 @@ use NetworkInternational\NGenius\Model\CoreFactory;
 
 class OrderAuthCaptured implements ObserverInterface
 {
-
     /**
      * @var CoreFactory
      */
