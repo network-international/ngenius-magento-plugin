@@ -748,8 +748,7 @@ class Payment implements HttpGetActionInterface
                     }
 
                     $orderRef = $orderItem->getReference();
-                    $order = $this->orderRepository->get($orderItem->getId());
-                    $incrementId = $order->getIncrementId();
+                    $incrementId = $orderItem->getOrderId();
                     $this->logger->info("N-GENIUS Processing order $incrementId...");
 
                     $result   = $this->getResponseAPI($orderRef);
@@ -757,7 +756,8 @@ class Payment implements HttpGetActionInterface
                     if ($result && isset($result[$embedded]['payment']) && is_array($result[$embedded]['payment'])) {
                         $action        = $result['action'] ?? '';
                         $paymentResult = $result[$embedded]['payment'][0];
-                        if ($paymentResult['state'] == 'STARTED') {
+                        $this->logger->info('N-GENIUS state is ' . $paymentResult['state']);
+                        if ($paymentResult['state'] == 'STARTED' || $paymentResult['state'] == 'AWAIT_3DS') {
                             $paymentResult['state'] = "FAILED";
                             $this->ngeniusState = self::NGENIUS_FAILED;
                         }
