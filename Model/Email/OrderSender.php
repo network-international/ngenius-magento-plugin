@@ -21,7 +21,6 @@ use Psr\Log\LoggerInterface;
  */
 class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
 {
-
     /**
      * @var Config
      */

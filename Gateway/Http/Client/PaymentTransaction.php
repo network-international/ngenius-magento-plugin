@@ -9,6 +9,7 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Payment\Gateway\Http\TransferInterface;
 use Magento\Payment\Model\Method\Logger;
 use NetworkInternational\NGenius\Setup\Patch\Data\DataPatch;
+use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 use Ngenius\NgeniusCommon\NgeniusHTTPCommon;
 use Ngenius\NgeniusCommon\NgeniusHTTPTransfer;
 use NetworkInternational\NGenius\Gateway\Config\Config;
@@ -139,8 +140,13 @@ class PaymentTransaction implements ClientInterface
         if (isset($response->_links->payment->href)) {
             $data = $this->checkoutSession->getData();
 
+            $amount = (float)$response->amount->value;
+
+            $currencyCode = $response->amount->currencyCode;
+
             $data['reference'] = $response->reference ?? '';
             $data['action'] = $response->action ?? '';
+            $data['amount'] = ValueFormatter::formatOrderStatusAmount($currencyCode, $amount)/100;
             $data['state'] = $response->_embedded->payment[0]->state ?? '';
             $data['status'] = $this->orderStatus[0]['status'];
             $data['order_id']  = $data['last_real_order_id'];

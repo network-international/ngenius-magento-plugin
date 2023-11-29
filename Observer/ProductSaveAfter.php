@@ -79,7 +79,7 @@ class ProductSaveAfter implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-         $lastRealOrder = $this->checkoutSession->getLastRealOrder();
+        $lastRealOrder = $this->checkoutSession->getLastRealOrder();
         if ($lastRealOrder->getPayment() && $lastRealOrder->getData('state') === 'new' && ($lastRealOrder->getData(
             'status'
         ) === "payment_review")

@@ -66,11 +66,9 @@ class TransactionRefund extends PaymentTransaction
                 $orderItem->setCapturedAmt(($captured_amt - $refunded_amt) / 100);
             }
 
-            if ($this->config->getIsNgeniusRefundStatus()) {
-                $orderItem->setState(DataPatch::STATE);
-                $orderItem->setStatus($order_status);
-                $orderItem->save();
-            }
+            $orderItem->setState(DataPatch::STATE);
+            $orderItem->setStatus($order_status);
+            $orderItem->save();
 
             return [
                 'result' => [

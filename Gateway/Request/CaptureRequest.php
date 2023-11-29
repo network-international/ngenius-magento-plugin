@@ -12,6 +12,7 @@ use Magento\Payment\Gateway\Helper\SubjectReader;
 use NetworkInternational\NGenius\Model\CoreFactory;
 use Magento\Payment\Helper\Formatter;
 use Laminas\Http\Request;
+use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 
 /**
  * Request builder for payment captures
@@ -91,11 +92,7 @@ class CaptureRequest implements BuilderInterface
         $amount   = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
         $currencyCode = $orderItem->getCurrency();
 
-        if ($currencyCode === "UGX") {
-            $amount = $amount / 100;
-        } elseif (in_array($currencyCode, ['KWD', 'BHD', 'OMR'])) {
-            $amount = $amount * 10;
-        }
+        ValueFormatter::formatCurrencyAmount($currencyCode, $amount);
 
         if ($this->config->isComplete($storeId)) {
             return [
@@ -108,7 +105,7 @@ class CaptureRequest implements BuilderInterface
                         ],
                         'merchantDefinedData' => [
                             'pluginName' => 'magento-2',
-                            'pluginVersion' => '1.1.2'
+                            'pluginVersion' => '1.1.3'
                         ]
                     ],
                     'method' => \Laminas\Http\Request::METHOD_POST,

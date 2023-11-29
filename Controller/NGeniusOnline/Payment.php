@@ -50,6 +50,7 @@ class Payment implements HttpGetActionInterface
      * N-Genius states
      */
     public const NGENIUS_STARTED    = 'STARTED';
+    public const NGENIUS_CANCELED   = 'CANCELED';
     public const NGENIUS_AUTHORISED = 'AUTHORISED';
     public const NGENIUS_PURCHASED  = 'PURCHASED';
     public const NGENIUS_CAPTURED   = 'CAPTURED';
@@ -278,8 +279,20 @@ class Payment implements HttpGetActionInterface
      */
     public function execute()
     {
-        $orderRef              = $this->request->getParam('ref');
         $resultRedirectFactory = $this->resultRedirect->create(ResultFactory::TYPE_REDIRECT);
+
+        $storeId = $this->storeManager->getStore()->getId();
+
+        if ($this->config->isDebugCron($storeId)) {
+            $this->messageManager->addError(
+                __(
+                    'This is a cron debugging test, the order is still in pending.'
+                )
+            );
+            return $resultRedirectFactory->setPath('checkout/onepage/success');
+        }
+
+        $orderRef              = $this->request->getParam('ref');
 
         if ($orderRef) {
             $result = $this->getResponseAPI($orderRef);
@@ -289,7 +302,7 @@ class Payment implements HttpGetActionInterface
                 $action        = $result['action'] ?? '';
                 $paymentResult = $result[$embedded]['payment'][0];
                 $orderItem     = $this->fetchOrder('reference', $orderRef)->getFirstItem();
-                $this->processOrder($paymentResult, $orderItem, $orderRef, $action);
+                $this->processOrder($paymentResult, $orderItem, $action);
             }
             if ($this->error) {
                 $this->messageManager->addError(
@@ -320,7 +333,7 @@ class Payment implements HttpGetActionInterface
      * @throws LocalizedException
      * @throws ValidationException
      */
-    public function processOrder(array $paymentResult, object $orderItem, string $orderRef, string $action): void
+    public function processOrder(array $paymentResult, object $orderItem, string $action): void
     {
         $dataTable   = [];
         $incrementId = $orderItem->getOrderId();
@@ -479,6 +492,7 @@ class Payment implements HttpGetActionInterface
 
             return end($paymentIdArr);
         }
+        return "";
     }
 
     /**
@@ -723,6 +737,10 @@ class Payment implements HttpGetActionInterface
             $this->logger->info("N-GENIUS Found " . count($orderItems) . " unprocessed order(s)");
             $counter = 0;
             foreach ($orderItems as $orderItem) {
+
+                $orderItem->setState('cron');
+                $orderItem->setStatus('cron');
+                $orderItem->save();
                 try {
                     if ($counter >= 5) {
                         $this->logger->info("N-GENIUS Breaking loop at 5 orders to avoid timeout...");
@@ -739,7 +757,11 @@ class Payment implements HttpGetActionInterface
                     if ($result && isset($result[$embedded]['payment']) && is_array($result[$embedded]['payment'])) {
                         $action        = $result['action'] ?? '';
                         $paymentResult = $result[$embedded]['payment'][0];
-                        $this->processOrder($paymentResult, $orderItem, $orderRef, $action);
+                        if ($paymentResult['state'] == 'STARTED') {
+                            $paymentResult['state'] = "FAILED";
+                            $this->ngeniusState = self::NGENIUS_FAILED;
+                        }
+                        $this->processOrder($paymentResult, $orderItem, $action);
                     }
 
                     $counter++;

@@ -2,6 +2,12 @@
 Date                Version     Description
 =========================================================================
 
+2023-11-28: v1.1.3 : Cancel abandoned orders after one hour using the cron.
+                     Add the ability to debug cron job order processing.
+                     Update to N-Genius Common Class 1.0.6.
+                     Add support for XOF.
+                     Improve support for Samsung Pay Refunds.
+
 2023-10-31: v1.1.2 : Fix schema index attribute causing deprecated functionality warning.
                      Add support for BHD and KWD currency decimals.
 
