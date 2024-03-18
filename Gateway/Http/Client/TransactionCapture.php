@@ -31,7 +31,10 @@ class TransactionCapture extends PaymentTransaction
             $lastTransaction  = $transaction_data['last_transaction'];
             $captured_amt     = 0;
             $currencyCode     = $lastTransaction['amount']['currencyCode'] ?? '';
-            $amount           = ($amount > 0) ? ValueFormatter::formatOrderStatusAmount($currencyCode, ($amount / 100)) : 0;
+            $amount           = ($amount > 0) ? ValueFormatter::formatOrderStatusAmount(
+                $currencyCode,
+                ($amount / 100)
+            ) : 0;
 
             if (isset($lastTransaction['state'])
                 && ($lastTransaction['state'] == 'SUCCESS')
@@ -89,6 +92,7 @@ class TransactionCapture extends PaymentTransaction
 
             return end($transactionArr);
         }
+
         return false;
     }
 
@@ -96,6 +100,7 @@ class TransactionCapture extends PaymentTransaction
      * Gets NGenius payment data
      *
      * @param array $response
+     *
      * @return array
      */
     public function getTransactionData(mixed $response): mixed

@@ -43,8 +43,8 @@ class TransferFactory implements TransferFactoryInterface
                 ->setMethod($request['request']['method'])
                 ->setHeaders(
                     [
-                                 'Authorization' => 'Bearer ' . $request['token'],
-                                 'Token'         => $request['token'],
+                        'Authorization' => 'Bearer ' . $request['token'],
+                        'Token'         => $request['token'],
                     ]
                 )
                 ->setUri($request['request']['uri'])
@@ -59,6 +59,7 @@ class TransferFactory implements TransferFactoryInterface
      *
      * @param array $request
      * @param string $apiKey
+     *
      * @return Transfer|TransferInterface|void
      */
     public function tokenBuild(array $request, string $apiKey)
@@ -69,8 +70,8 @@ class TransferFactory implements TransferFactoryInterface
                 ->setMethod($request['request']['method'])
                 ->setHeaders(
                     [
-                                 'Authorization' => 'Basic ' . $apiKey,
-                                 'Content-Type'  => 'application/vnd.ni-identity.v1+json',
+                        'Authorization' => 'Basic ' . $apiKey,
+                        'Content-Type'  => 'application/vnd.ni-identity.v1+json',
                     ]
                 )
                 ->setUri($request['request']['uri'])

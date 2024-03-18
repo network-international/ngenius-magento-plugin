@@ -108,7 +108,7 @@ class RefundRequest implements BuilderInterface
         $token = $this->tokenRequest->getAccessToken($storeId);
         list($refund_url, $method, $error) = $this->getRefundUrl($token, $orderReference);
 
-        $amount = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
+        $amount       = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
         $currencyCode = $order_details->getOrderCurrencyCode();
 
         ValueFormatter::formatCurrencyAmount($currencyCode, $amount);
@@ -122,13 +122,13 @@ class RefundRequest implements BuilderInterface
                 'token'   => $token,
                 'request' => [
                     'data'   => [
-                        'amount' => [
+                        'amount'              => [
                             'currencyCode' => $currencyCode,
                             'value'        => $amount
                         ],
                         'merchantDefinedData' => [
-                            'pluginName' => 'magento-2',
-                            'pluginVersion' => '1.1.3'
+                            'pluginName'    => 'magento-2',
+                            'pluginVersion' => '1.1.4'
                         ]
                     ],
                     'method' => $method,
@@ -177,6 +177,7 @@ class RefundRequest implements BuilderInterface
      *
      * @param string $token
      * @param string $order_ref
+     *
      * @return mixed
      * @throws NoSuchEntityException
      */
@@ -186,7 +187,7 @@ class RefundRequest implements BuilderInterface
     ) {
         $url = $this->config->getFetchRequestURL($order_ref);
 
-        $storeId = $this->storeManager->getStore()->getId();
+        $storeId             = $this->storeManager->getStore()->getId();
         $ngeniusHttpTransfer = new NgeniusHTTPTransfer($url, $this->config->getHttpVersion($storeId));
         $ngeniusHttpTransfer->setMethod('GET');
         $ngeniusHttpTransfer->setPaymentHeaders($token);

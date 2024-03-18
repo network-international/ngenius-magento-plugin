@@ -1,44 +1,54 @@
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment">
-            <group id="ngeniusonline" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="ngeniusonline" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
                 <label>N-Genius Online</label>
-                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>payment/ngeniusonline/active</config_path>
                 </field>
-                <field id="title" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="title" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
                     <label>Title</label>
                     <config_path>payment/ngeniusonline/title</config_path>
                     <validate>required-entry</validate>
                 </field>
-                <field id="environment" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="0" >
+                <field id="environment" translate="label" type="select" sortOrder="3" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
                     <label>Environment</label>
                     <source_model>NetworkInternational\NGenius\Model\Config\Environment</source_model>
                     <config_path>payment/ngeniusonline/environment</config_path>
                 </field>
-                <field id="uat_api_url" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="uat_api_url" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
                     <label>Sandbox API URL</label>
                     <validate>required-entry</validate>
                     <config_path>payment/ngeniusonline/uat_api_url</config_path>
                 </field>
-                <field id="live_api_url" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="live_api_url" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
                     <label>Live API URL</label>
                     <validate>required-entry</validate>
                     <config_path>payment/ngeniusonline/live_api_url</config_path>
                 </field>
-                <field id="payment_action" translate="label" type="select" sortOrder="5.5" showInDefault="1" showInWebsite="1" showInStore="1" >
+                <field id="payment_action" translate="label" type="select" sortOrder="5.5" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
                     <label>Magento Payment Action</label>
                     <source_model>NetworkInternational\NGenius\Model\Config\PaymentAction</source_model>
                     <config_path>payment/ngeniusonline/payment_action</config_path>
                 </field>
-                <field id="ngenius_payment_action" translate="label" type="select" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0" >
-                    <label>NGenius Payment Action</label>
+                <field id="ngenius_payment_action" translate="label" type="select" sortOrder="6" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
+                    <label>N-Genius Payment Action</label>
                     <source_model>NetworkInternational\NGenius\Model\Config\NgeniusPaymentAction</source_model>
                     <config_path>payment/ngeniusonline/ngenius_payment_action</config_path>
                 </field>
-                <field id="ngenius_initial_order_status" translate="label" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1" >
+                <field id="ngenius_initial_order_status" translate="label" type="select" sortOrder="7" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
                     <label>Status of new order</label>
                     <config_path>payment/ngeniusonline/ngenius_initial_order_status</config_path>
                     <source_model>Magento\Sales\Model\ResourceModel\Order\Status\Collection</source_model>
@@ -71,13 +81,16 @@
                        showInWebsite="1" showInStore="0">
                     <label>N-Genius Refund Statuses</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Select "Yes" to set custom N-Genius refund order statuses after a successful refund.</comment>
+                    <comment>Select "Yes" to set custom N-Genius refund order statuses after a successful refund.
+                    </comment>
                 </field>
                 <field id="order_email" translate="label" type="select" sortOrder="9.4" showInDefault="1"
                        showInWebsite="1" showInStore="0">
                     <label>Send Email on Order Creation</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Select "Yes" to send the order email when landing on the payment page. "No" will only send the order email when payment is successful.</comment>
+                    <comment>Select "Yes" to send the order email when landing on the payment page. "No" will only send
+                        the order email when payment is successful.
+                    </comment>
                 </field>
                 <field id="invoice_email" translate="label" type="select" sortOrder="9.5" showInDefault="1"
                        showInWebsite="1" showInStore="0">
@@ -85,7 +98,8 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Select "Yes" to send the invoice email when payment is successful.</comment>
                 </field>
-                <field id="outlet_ref" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="outlet_ref" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
                     <label>Outlet Reference ID</label>
                     <config_path>payment/ngeniusonline/outlet_ref</config_path>
                     <validate>required-entry</validate>
@@ -93,14 +107,16 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="outlet_ref_2" translate="label" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="outlet_ref_2" translate="label" type="text" sortOrder="11" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
                     <label>Outlet Reference 2 ID (Optional)</label>
                     <config_path>payment/ngeniusonline/outlet_ref_2</config_path>
                     <depends>
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="outlet_ref_2_currencies" translate="label" type="multiselect" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="outlet_ref_2_currencies" translate="label" type="multiselect" sortOrder="12"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Outlet Reference 2 Currencies (Optional)</label>
                     <config_path>payment/ngeniusonline/outlet_ref_2_currencies</config_path>
                     <source_model>NetworkInternational\NGenius\Model\Config\OutletCurrencies</source_model>
@@ -108,7 +124,8 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="api_key" translate="label" type="text" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="api_key" translate="label" type="text" sortOrder="13" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
                     <label>API Key</label>
                     <config_path>payment/ngeniusonline/api_key</config_path>
                     <validate>required-entry</validate>
@@ -116,17 +133,20 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="http_version" translate="label" type="select" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="http_version" translate="label" type="select" sortOrder="14" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
                     <label>HTTP Version</label>
                     <source_model>NetworkInternational\NGenius\Model\Config\HttpVersion</source_model>
                     <config_path>payment/ngeniusonline/http_version</config_path>
                 </field>
-                <field id="debug" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="debug" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
                     <label>Debug</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>payment/ngeniusonline/debug</config_path>
                 </field>
-                <field id="debug_cron" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="debug_cron" translate="label" type="select" sortOrder="15" showInDefault="1"
+                       showInWebsite="1" showInStore="0">
                     <label>Debug Cron</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <config_path>payment/ngeniusonline/debug_cron</config_path>

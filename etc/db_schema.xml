@@ -1,17 +1,22 @@
-<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
-    <table name="ngenius_networkinternational" resource="default" engine="innodb" comment="N-Genius order table">
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="ngenius_networkinternational_sales_order" resource="default" engine="innodb"
+           comment="N-Genius order table">
         <column xsi:type="int" name="nid" nullable="false" unsigned="true" identity="true" comment="n-genius Id"/>
         <column xsi:type="int" name="entity_id" nullable="false" unsigned="true" comment="Entity Id"/>
         <column xsi:type="varchar" name="order_id" nullable="false" length="55" comment="Order Id"/>
-        <column xsi:type="decimal" name="amount" nullable="false" unsigned="true" scale="4" precision="12" comment="Amount"/>
+        <column xsi:type="decimal" name="amount" nullable="false" unsigned="true" scale="4" precision="12"
+                comment="Amount"/>
         <column xsi:type="varchar" name="currency" nullable="false" length="3" comment="Currency"/>
         <column xsi:type="varchar" name="reference" nullable="false" comment="Reference"/>
         <column xsi:type="varchar" name="action" nullable="false" length="20" comment="Action"/>
         <column xsi:type="varchar" name="state" nullable="false" length="20" comment="State"/>
         <column xsi:type="varchar" name="status" nullable="false" length="50" comment="Status"/>
-        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP"
+                comment="Created At"/>
         <column xsi:type="varchar" name="payment_id" nullable="false" comment="Payment Id"/>
-        <column xsi:type="decimal" name="captured_amt" nullable="false" unsigned="true" scale="4" precision="12" comment="Captured Amount"/>
+        <column xsi:type="decimal" name="captured_amt" nullable="false" unsigned="true" scale="4" precision="12"
+                comment="Captured Amount"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="nid"/>
         </constraint>

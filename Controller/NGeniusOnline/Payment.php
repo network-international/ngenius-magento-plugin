@@ -37,6 +37,7 @@ use NetworkInternational\NGenius\Gateway\Http\TransferFactory;
 use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
 use NetworkInternational\NGenius\Model\CoreFactory;
 use NetworkInternational\NGenius\Setup\Patch\Data\DataPatch;
+use Ngenius\NgeniusCommon\Processor\ApiProcessor;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -50,7 +51,8 @@ class Payment implements HttpGetActionInterface
      * N-Genius states
      */
     public const NGENIUS_STARTED    = 'STARTED';
-    public const NGENIUS_CANCELED   = 'CANCELED';
+    public const NGENIUS_PENDING    = 'PENDING';
+    public const NGENIUS_AWAIT3DS   = 'AWAIT3DS';
     public const NGENIUS_AUTHORISED = 'AUTHORISED';
     public const NGENIUS_PURCHASED  = 'PURCHASED';
     public const NGENIUS_CAPTURED   = 'CAPTURED';
@@ -197,28 +199,28 @@ class Payment implements HttpGetActionInterface
     /**
      * Payment constructor.
      *
-     * @param ManagerInterface         $messageManager
-     * @param PageFactory              $pageFactory
-     * @param RequestInterface         $request
-     * @param Data                     $checkoutHelper
-     * @param Config                   $config
-     * @param TokenRequest             $tokenRequest
-     * @param StoreManagerInterface    $storeManager
-     * @param TransferFactory          $transferFactory
-     * @param TransactionFetch         $transaction
-     * @param CoreFactory              $coreFactory
-     * @param BuilderInterface         $transactionBuilder
-     * @param ResultFactory            $resultRedirect
-     * @param InvoiceService           $invoiceService
-     * @param TransactionFactory       $transactionFactory
-     * @param InvoiceSender            $invoiceSender
-     * @param OrderSender              $orderSender
-     * @param OrderFactory             $orderFactory
-     * @param LoggerInterface          $logger
-     * @param Session                  $checkoutSession
-     * @param Product                  $productCollection
-     * @param SerializerInterface      $serializer
-     * @param Builder                  $_transactionBuilder
+     * @param ManagerInterface $messageManager
+     * @param PageFactory $pageFactory
+     * @param RequestInterface $request
+     * @param Data $checkoutHelper
+     * @param Config $config
+     * @param TokenRequest $tokenRequest
+     * @param StoreManagerInterface $storeManager
+     * @param TransferFactory $transferFactory
+     * @param TransactionFetch $transaction
+     * @param CoreFactory $coreFactory
+     * @param BuilderInterface $transactionBuilder
+     * @param ResultFactory $resultRedirect
+     * @param InvoiceService $invoiceService
+     * @param TransactionFactory $transactionFactory
+     * @param InvoiceSender $invoiceSender
+     * @param OrderSender $orderSender
+     * @param OrderFactory $orderFactory
+     * @param LoggerInterface $logger
+     * @param Session $checkoutSession
+     * @param Product $productCollection
+     * @param SerializerInterface $serializer
+     * @param Builder $_transactionBuilder
      * @param OrderRepositoryInterface $orderRepository
      */
     public function __construct(
@@ -246,30 +248,30 @@ class Payment implements HttpGetActionInterface
         Builder $_transactionBuilder,
         OrderRepositoryInterface $orderRepository,
     ) {
-        $this->request                = $request;
-        $this->checkoutHelper         = $checkoutHelper;
-        $this->pageFactory            = $pageFactory;
-        $this->messageManager         = $messageManager;
-        $this->config                 = $config;
-        $this->tokenRequest           = $tokenRequest;
-        $this->storeManager           = $storeManager;
-        $this->transferFactory        = $transferFactory;
-        $this->transaction            = $transaction;
-        $this->coreFactory            = $coreFactory;
-        $this->transactionBuilder     = $transactionBuilder;
-        $this->resultRedirect         = $resultRedirect;
-        $this->invoiceService         = $invoiceService;
-        $this->transactionFactory     = $transactionFactory;
-        $this->invoiceSender          = $invoiceSender;
-        $this->orderSender            = $orderSender;
-        $this->orderFactory           = $orderFactory;
-        $this->logger                 = $logger;
-        $this->orderStatus            = DataPatch::getStatuses();
-        $this->checkoutSession        = $checkoutSession;
-        $this->productCollection      = $productCollection;
-        $this->serializer             = $serializer;
-        $this->_transactionBuilder    = $_transactionBuilder;
-        $this->orderRepository        = $orderRepository;
+        $this->request             = $request;
+        $this->checkoutHelper      = $checkoutHelper;
+        $this->pageFactory         = $pageFactory;
+        $this->messageManager      = $messageManager;
+        $this->config              = $config;
+        $this->tokenRequest        = $tokenRequest;
+        $this->storeManager        = $storeManager;
+        $this->transferFactory     = $transferFactory;
+        $this->transaction         = $transaction;
+        $this->coreFactory         = $coreFactory;
+        $this->transactionBuilder  = $transactionBuilder;
+        $this->resultRedirect      = $resultRedirect;
+        $this->invoiceService      = $invoiceService;
+        $this->transactionFactory  = $transactionFactory;
+        $this->invoiceSender       = $invoiceSender;
+        $this->orderSender         = $orderSender;
+        $this->orderFactory        = $orderFactory;
+        $this->logger              = $logger;
+        $this->orderStatus         = DataPatch::getStatuses();
+        $this->checkoutSession     = $checkoutSession;
+        $this->productCollection   = $productCollection;
+        $this->serializer          = $serializer;
+        $this->_transactionBuilder = $_transactionBuilder;
+        $this->orderRepository     = $orderRepository;
     }
 
     /**
@@ -289,10 +291,11 @@ class Payment implements HttpGetActionInterface
                     'This is a cron debugging test, the order is still in pending.'
                 )
             );
+
             return $resultRedirectFactory->setPath('checkout/onepage/success');
         }
 
-        $orderRef              = $this->request->getParam('ref');
+        $orderRef = $this->request->getParam('ref');
 
         if ($orderRef) {
             $result = $this->getResponseAPI($orderRef);
@@ -302,6 +305,9 @@ class Payment implements HttpGetActionInterface
                 $action        = $result['action'] ?? '';
                 $paymentResult = $result[$embedded]['payment'][0];
                 $orderItem     = $this->fetchOrder('reference', $orderRef)->getFirstItem();
+
+                $apiProcessor = new ApiProcessor($result);
+                $apiProcessor->processPaymentAction($action, $this->ngeniusState);
                 $this->processOrder($paymentResult, $orderItem, $action);
             }
             if ($this->error) {
@@ -324,10 +330,11 @@ class Payment implements HttpGetActionInterface
     /**
      * Process Order - response from Payment Portal
      *
-     * @param  array  $paymentResult
-     * @param  object $orderItem
-     * @param  string $orderRef
-     * @param  string $action
+     * @param array $paymentResult
+     * @param object $orderItem
+     * @param string $orderRef
+     * @param string $action
+     *
      * @throws CouldNotSaveException
      * @throws InputException
      * @throws LocalizedException
@@ -346,16 +353,15 @@ class Payment implements HttpGetActionInterface
             $storeId = $this->storeManager->getStore()->getId();
 
             if ($order->getStatus() !== $this->config->getCustomSuccessOrderStatus($storeId)) {
-
                 if ($order->getId()) {
-                    $dataTable = $this->getCapturePayment(
+                    $dataTable               = $this->getCapturePayment(
                         $order,
                         $paymentResult,
                         $paymentId,
                         $action,
                         $dataTable
                     );
-                    $dataTable['entity_id'] = $order->getId();
+                    $dataTable['entity_id']  = $order->getId();
                     $dataTable['payment_id'] = $paymentId;
 
                     $this->updateTable($dataTable, $orderItem);
@@ -409,7 +415,7 @@ class Payment implements HttpGetActionInterface
             // Reverse reserved stock
             $this->error        = true;
             $this->errorMessage = 'Result Code: ' . ($paymentResult['authResponse']['resultCode'] ?? 'FAILED')
-                . ' Reason: ' . ($paymentResult['authResponse']['resultMessage'] ?? 'Unknown');
+                                  . ' Reason: ' . ($paymentResult['authResponse']['resultMessage'] ?? 'Unknown');
             $this->checkoutSession->restoreQuote();
 
             $payment = $order->getPayment();
@@ -422,17 +428,17 @@ class Payment implements HttpGetActionInterface
                 'Amount'      => $formattedPrice
             ];
 
-            $trans       = $this->_transactionBuilder;
+            $trans = $this->_transactionBuilder;
 
             $transaction = $trans->setPayment($payment)
-                ->setOrder($order)
-                ->setTransactionId($paymentId)
-                ->setAdditionalInformation(
-                    [Transaction::RAW_DETAILS => $paymentData]
-                )
-                ->setFailSafe(true)
+                                 ->setOrder($order)
+                                 ->setTransactionId($paymentId)
+                                 ->setAdditionalInformation(
+                                     [Transaction::RAW_DETAILS => $paymentData]
+                                 )
+                                 ->setFailSafe(true)
                 // Build method creates the transaction and returns the object
-                ->build(TransactionInterface::TYPE_CAPTURE);
+                                 ->build(TransactionInterface::TYPE_CAPTURE);
 
             $payment->addTransactionCommentsToOrder(
                 $transaction,
@@ -471,8 +477,7 @@ class Payment implements HttpGetActionInterface
             $order->save();
 
             $order->addStatusHistoryComment('The payment on order has failed.')
-                ->setIsCustomerNotified(false)->save();
-
+                  ->setIsCustomerNotified(false)->save();
         }
 
         return $dataTable;
@@ -492,6 +497,7 @@ class Payment implements HttpGetActionInterface
 
             return end($paymentIdArr);
         }
+
         return "";
     }
 
@@ -522,17 +528,17 @@ class Payment implements HttpGetActionInterface
             ];
 
             $transactionBuilder = $this->transactionBuilder->setPayment($payment)
-                ->setOrder($order)
-                ->setTransactionId($paymentId)
-                ->setAdditionalInformation(
-                    [Transaction::RAW_DETAILS => $paymentData]
-                )->setAdditionalInformation(
+                                                           ->setOrder($order)
+                                                           ->setTransactionId($paymentId)
+                                                           ->setAdditionalInformation(
+                                                               [Transaction::RAW_DETAILS => $paymentData]
+                                                           )->setAdditionalInformation(
                     ['paymentResult' => json_encode($paymentResult)]
                 )
-                ->setFailSafe(true)
-                ->build(
-                    Transaction::TYPE_AUTH
-                );
+                                                           ->setFailSafe(true)
+                                                           ->build(
+                                                               Transaction::TYPE_AUTH
+                                                           );
 
             $payment->addTransactionCommentsToOrder($transactionBuilder, null);
             $payment->setParentTransactionId(null);
@@ -550,7 +556,7 @@ class Payment implements HttpGetActionInterface
      * Order Sale.
      *
      * @param object $order
-     * @param array  $paymentResult
+     * @param array $paymentResult
      * @param string $paymentId
      *
      * @return null|float
@@ -576,18 +582,18 @@ class Payment implements HttpGetActionInterface
             $transactionId = $paymentResult['reference'];
 
             $transactionBuilder = $this->transactionBuilder->setPayment($payment)
-                ->setOrder($order)
-                ->setTransactionId($transactionId)
-                ->setAdditionalInformation(
-                    [Transaction::RAW_DETAILS => (array)$paymentData]
-                )
-                ->setAdditionalInformation(
-                    ['paymentResult' => json_encode($paymentResult)]
-                )
-                ->setFailSafe(true)
-                ->build(
-                    Transaction::TYPE_CAPTURE
-                );
+                                                           ->setOrder($order)
+                                                           ->setTransactionId($transactionId)
+                                                           ->setAdditionalInformation(
+                                                               [Transaction::RAW_DETAILS => (array)$paymentData]
+                                                           )
+                                                           ->setAdditionalInformation(
+                                                               ['paymentResult' => json_encode($paymentResult)]
+                                                           )
+                                                           ->setFailSafe(true)
+                                                           ->build(
+                                                               Transaction::TYPE_CAPTURE
+                                                           );
 
             $payment->addTransactionCommentsToOrder($transactionBuilder, null);
             $payment->setParentTransactionId(null);
@@ -613,7 +619,7 @@ class Payment implements HttpGetActionInterface
      * Update Invoice.
      *
      * @param object $order
-     * @param bool   $flag
+     * @param bool $flag
      * @param string $transactionId
      *
      * @return null
@@ -647,7 +653,7 @@ class Payment implements HttpGetActionInterface
     /**
      * Update Table.
      *
-     * @param array  $data
+     * @param array $data
      * @param object $orderItem
      *
      * @return bool true
@@ -684,7 +690,7 @@ class Payment implements HttpGetActionInterface
                 'uri'    => $this->config->getFetchRequestURL($orderRef, $storeId)
             ]
         ];
-        $result = $this->transaction->placeRequest($request);
+        $result  = $this->transaction->placeRequest($request);
 
         return $this->resultValidator($result);
     }
@@ -737,7 +743,6 @@ class Payment implements HttpGetActionInterface
             $this->logger->info("N-GENIUS Found " . count($orderItems) . " unprocessed order(s)");
             $counter = 0;
             foreach ($orderItems as $orderItem) {
-
                 $orderItem->setState('cron');
                 $orderItem->setStatus('cron');
                 $orderItem->save();
@@ -747,8 +752,16 @@ class Payment implements HttpGetActionInterface
                         break;
                     }
 
-                    $orderRef = $orderItem->getReference();
+                    $orderRef    = $orderItem->getReference();
                     $incrementId = $orderItem->getOrderId();
+
+                    $order = $this->orderFactory->create()->loadByIncrementId($incrementId);
+
+                    if ($order->getPayment()->getMethod() !== 'ngeniusonline') {
+                        $this->logger->info("Order#" . $incrementId . " will not be processed.");
+                        continue;
+                    }
+
                     $this->logger->info("N-GENIUS Processing order $incrementId...");
 
                     $result   = $this->getResponseAPI($orderRef);
@@ -757,9 +770,12 @@ class Payment implements HttpGetActionInterface
                         $action        = $result['action'] ?? '';
                         $paymentResult = $result[$embedded]['payment'][0];
                         $this->logger->info('N-GENIUS state is ' . $paymentResult['state']);
-                        if ($paymentResult['state'] == 'STARTED' || $paymentResult['state'] == 'AWAIT_3DS') {
+                        if ($paymentResult['state'] === self::NGENIUS_STARTED
+                            || $paymentResult['state'] === self::NGENIUS_AWAIT3DS
+                            || $paymentResult['state'] == self::NGENIUS_PENDING
+                        ) {
                             $paymentResult['state'] = "FAILED";
-                            $this->ngeniusState = self::NGENIUS_FAILED;
+                            $this->ngeniusState     = self::NGENIUS_FAILED;
                         }
                         $this->processOrder($paymentResult, $orderItem, $action);
                     }
@@ -801,7 +817,7 @@ class Payment implements HttpGetActionInterface
                 $order->addStatusHistoryComment(
                     __('Notified the customer about invoice #%1.', $invoice->getIncrementId())
                 )
-                    ->setIsCustomerNotified(true)->save();
+                      ->setIsCustomerNotified(true)->save();
             } catch (Exception $e) {
                 $this->messageManager->addError(__('We can\'t send the invoice email right now.'));
             }
@@ -814,6 +830,7 @@ class Payment implements HttpGetActionInterface
      * @param Order $order
      * @param ?string $status
      * @param string $message
+     *
      * @return void
      * @throws NoSuchEntityException
      */

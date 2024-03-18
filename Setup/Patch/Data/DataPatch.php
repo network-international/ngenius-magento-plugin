@@ -38,8 +38,8 @@ class DataPatch implements DataPatchInterface
 
         $checkExistingStatus1 = $this->moduleDataSetup->getConnection()->fetchOne(
             $this->moduleDataSetup->getConnection()->select()
-                ->from($table)
-                ->where('status = ?', 'ngenius_pending')
+                                  ->from($table)
+                                  ->where('status = ?', 'ngenius_pending')
         );
 
         if (!$checkExistingStatus1) {
@@ -48,8 +48,8 @@ class DataPatch implements DataPatchInterface
 
         $checkExistingStatus2 = $this->moduleDataSetup->getConnection()->fetchOne(
             $this->moduleDataSetup->getConnection()->select()
-                ->from($table)
-                ->where('status = ?', 'ngenius_declined')
+                                  ->from($table)
+                                  ->where('status = ?', 'ngenius_declined')
         );
 
         if (!$checkExistingStatus2) {
@@ -59,7 +59,7 @@ class DataPatch implements DataPatchInterface
                     $table1,
                     [
                         'status' => 'ngenius_declined',
-                        'label' => 'N-Genius Declined',
+                        'label'  => 'N-Genius Declined',
                     ]
                 );
             }
@@ -69,9 +69,9 @@ class DataPatch implements DataPatchInterface
                 $this->moduleDataSetup->getConnection()->insert(
                     $table2,
                     [
-                        'status' => 'ngenius_declined',
-                        'state' => 'ngenius_state',
-                        'is_default' => 0,
+                        'status'           => 'ngenius_declined',
+                        'state'            => 'ngenius_state',
+                        'is_default'       => 0,
                         'visible_on_front' => 1,
                     ]
                 );
@@ -90,11 +90,11 @@ class DataPatch implements DataPatchInterface
     {
         // Add code from the DataPatch class
         $this->moduleDataSetup->getConnection()
-            ->insertArray(
-                $this->moduleDataSetup->getTable('sales_order_status'),
-                ['status', 'label'],
-                $this->getStatuses()
-            );
+                              ->insertArray(
+                                  $this->moduleDataSetup->getTable('sales_order_status'),
+                                  ['status', 'label'],
+                                  $this->getStatuses()
+                              );
 
         $state[] = ['ngenius_pending', self::STATE, '1', '1'];
         $state[] = ['ngenius_processing', self::STATE, '0', '1'];
@@ -109,11 +109,11 @@ class DataPatch implements DataPatchInterface
         $state[] = ['ngenius_declined', self::STATE, '0', '1'];
 
         $this->moduleDataSetup->getConnection()
-            ->insertArray(
-                $this->moduleDataSetup->getTable('sales_order_status_state'),
-                ['status', 'state', 'is_default', 'visible_on_front'],
-                $state
-            );
+                              ->insertArray(
+                                  $this->moduleDataSetup->getTable('sales_order_status_state'),
+                                  ['status', 'state', 'is_default', 'visible_on_front'],
+                                  $state
+                              );
     }
 
     /**

@@ -42,7 +42,7 @@ class CaptureStrategyCommand implements CommandInterface
     public function execute(array $commandSubject)
     {
         $paymentDO = SubjectReader::readPayment($commandSubject);
-        $command = $this->getCommand($paymentDO);
+        $command   = $this->getCommand($paymentDO);
         if ($command && $command !== "authorize" && $command !== "order") {
             $this->commandPool->get($command)->execute($commandSubject);
         } else {
@@ -56,7 +56,8 @@ class CaptureStrategyCommand implements CommandInterface
     /**
      * Gets command name.
      *
-     * @param  PaymentDataObjectInterface $paymentDO
+     * @param PaymentDataObjectInterface $paymentDO
+     *
      * @return string
      */
     private function getCommand(PaymentDataObjectInterface $paymentDO)

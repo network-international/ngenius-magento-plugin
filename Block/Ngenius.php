@@ -55,33 +55,34 @@ class Ngenius extends ConfigurableInfo
     /**
      * Ngenius constructor.
      *
-     * @param OrderInterface       $orderInterface
-     * @param TokenRequest         $tokenRequest
+     * @param OrderInterface $orderInterface
+     * @param TokenRequest $tokenRequest
      * @param ScopeConfigInterface $scopeConfig
-     * @param Session              $checkoutSession
-     * @param PaymentRequest       $paymentRequest
-     * @param PaymentTransaction   $paymentTransaction
+     * @param Session $checkoutSession
+     * @param PaymentRequest $paymentRequest
+     * @param PaymentTransaction $paymentTransaction
      */
     public function __construct(
-        OrderInterface       $orderInterface,
-        TokenRequest         $tokenRequest,
+        OrderInterface $orderInterface,
+        TokenRequest $tokenRequest,
         ScopeConfigInterface $scopeConfig,
-        Session              $checkoutSession,
-        PaymentRequest       $paymentRequest,
-        PaymentTransaction   $paymentTransaction
+        Session $checkoutSession,
+        PaymentRequest $paymentRequest,
+        PaymentTransaction $paymentTransaction
     ) {
-        $this->checkoutSession      = $checkoutSession;
-        $this->orderFactory         = $orderInterface;
-        $this->tokenRequest         = $tokenRequest;
-        $this->_scopeConfig         = $scopeConfig;
-        $this->paymentRequest       = $paymentRequest;
-        $this->paymentTransaction   = $paymentTransaction;
+        $this->checkoutSession    = $checkoutSession;
+        $this->orderFactory       = $orderInterface;
+        $this->tokenRequest       = $tokenRequest;
+        $this->_scopeConfig       = $scopeConfig;
+        $this->paymentRequest     = $paymentRequest;
+        $this->paymentTransaction = $paymentTransaction;
     }
 
     /**
      * Retrieves Pay Page URL
      *
-     * @param  string $ngeniusPaymentAction
+     * @param string $ngeniusPaymentAction
+     *
      * @return array
      * @throws CouldNotSaveException
      * @throws NoSuchEntityException
@@ -89,7 +90,7 @@ class Ngenius extends ConfigurableInfo
     public function getPaymentUrl(string $ngeniusPaymentAction): array
     {
         $checkoutSession = $this->checkoutSession;
-        $return = [];
+        $return          = [];
 
         if ($incrementId = $checkoutSession->getLastRealOrderId()) {
             $order = $this->orderFactory->loadByIncrementId($incrementId);
@@ -98,7 +99,6 @@ class Ngenius extends ConfigurableInfo
             $amount  = $order->getGrandTotal() * 100;
 
             if (in_array($ngeniusPaymentAction, $this->allowedActions)) {
-
                 $requestData = [
                     'token'   => $this->tokenRequest->getAccessToken($storeId),
                     'request' => $this->paymentRequest->getBuildArray(

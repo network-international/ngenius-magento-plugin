@@ -17,7 +17,7 @@ class Report extends \Magento\Backend\App\Action
     /**
      * Report constructor.
      *
-     * @param Context     $context
+     * @param Context $context
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
@@ -37,6 +37,7 @@ class Report extends \Magento\Backend\App\Action
     {
         $resultPage = $this->resultPageFactory->create();
         $resultPage->getConfig()->getTitle()->prepend((__('N-Genius Report')));
+
         return $resultPage;
     }
 }

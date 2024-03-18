@@ -92,8 +92,8 @@ class TransactionVoid extends PaymentTransaction
             return [];
         } else {
             $collection = $this->coreFactory->create()
-                ->getCollection()
-                ->addFieldToFilter('reference', $response['orderReference']);
+                                            ->getCollection()
+                                            ->addFieldToFilter('reference', $response['orderReference']);
 
             $orderItem = $collection->getFirstItem();
 
@@ -112,9 +112,9 @@ class TransactionVoid extends PaymentTransaction
             $payment->setAmountAuthorized(0.00);
 
             $transaction = $trans->setPayment($payment)
-                ->setOrder($order)
-                ->setFailSafe(true)
-                ->build(TransactionInterface::TYPE_VOID);
+                                 ->setOrder($order)
+                                 ->setFailSafe(true)
+                                 ->build(TransactionInterface::TYPE_VOID);
 
             $message = __('The authorised amount has been voided');
             $payment->addTransactionCommentsToOrder($transaction, $message);

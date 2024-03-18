@@ -127,8 +127,8 @@ class UpdateOrder
             $_transactionBuilder,
             $orderRepository
         );
-        $this->state = $state;
-        $this->logger = $logger;
+        $this->state               = $state;
+        $this->logger              = $logger;
     }
 
     /**

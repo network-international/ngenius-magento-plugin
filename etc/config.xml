@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <payment>
             <ngeniusonline>
@@ -42,8 +43,10 @@
                 <order_endpoint><![CDATA[/transactions/outlets/%s/orders]]></order_endpoint>
                 <fetch_endpoint><![CDATA[/transactions/outlets/%s/orders/%s]]></fetch_endpoint>
                 <capture_endpoint><![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/captures]]></capture_endpoint>
-                <void_auth_endpoint><![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/cancel]]></void_auth_endpoint>
-                <refund_endpoint><![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/captures/%s/refund]]></refund_endpoint>
+                <void_auth_endpoint>
+                    <![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/cancel]]></void_auth_endpoint>
+                <refund_endpoint>
+                    <![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/captures/%s/refund]]></refund_endpoint>
             </ngeniusonline>
         </payment>
     </default>

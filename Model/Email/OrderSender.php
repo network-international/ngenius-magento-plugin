@@ -65,6 +65,7 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
         $this->globalConfig  = $globalConfig;
         $this->config        = $config;
     }
+
     /**
      * Sends order email to the customer.
      *
@@ -77,7 +78,7 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
      * corresponding cron job.
      *
      * @param Order $order
-     * @param bool  $forceSyncMode
+     * @param bool $forceSyncMode
      *
      * @return bool
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -86,7 +87,7 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
     {
         $paymentCode = $order->getPayment()->getMethodInstance()->getCode();
 
-        $storeId = $order->getStoreId();
+        $storeId      = $order->getStoreId();
         $emailOnOrder = $this->config->getEmailSend($storeId);
 
         $sendOrder = false;
@@ -110,6 +111,7 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
                 if ($this->checkAndSend($order)) {
                     $order->setEmailSent(true);
                     $this->orderResource->saveAttribute($order, ['send_email', 'email_sent']);
+
                     return true;
                 }
             } else {
@@ -118,6 +120,7 @@ class OrderSender extends \Magento\Sales\Model\Order\Email\Sender\OrderSender
             }
 
             $this->orderResource->saveAttribute($order, 'send_email');
+
             return false;
         }
     }
