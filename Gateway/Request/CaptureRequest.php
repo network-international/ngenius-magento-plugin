@@ -46,10 +46,10 @@ class CaptureRequest implements BuilderInterface
     /**
      * CaptureRequest constructor.
      *
-     * @param Config                $config
-     * @param TokenRequest          $tokenRequest
+     * @param Config $config
+     * @param TokenRequest $tokenRequest
      * @param StoreManagerInterface $storeManager
-     * @param CoreFactory           $coreFactory
+     * @param CoreFactory $coreFactory
      */
     public function __construct(
         Config $config,
@@ -85,11 +85,11 @@ class CaptureRequest implements BuilderInterface
         }
 
         $collection = $this->coreFactory->create()
-            ->getCollection()
-            ->addFieldToFilter('order_id', $order->getOrderIncrementId());
+                                        ->getCollection()
+                                        ->addFieldToFilter('order_id', $order->getOrderIncrementId());
         $orderItem  = $collection->getFirstItem();
 
-        $amount   = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
+        $amount       = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
         $currencyCode = $orderItem->getCurrency();
 
         ValueFormatter::formatCurrencyAmount($currencyCode, $amount);
@@ -99,13 +99,13 @@ class CaptureRequest implements BuilderInterface
                 'token'   => $this->tokenRequest->getAccessToken($storeId),
                 'request' => [
                     'data'   => [
-                        'amount' => [
+                        'amount'              => [
                             'currencyCode' => $currencyCode,
                             'value'        => $amount
                         ],
                         'merchantDefinedData' => [
-                            'pluginName' => 'magento-2',
-                            'pluginVersion' => '1.1.3'
+                            'pluginName'    => 'magento-2',
+                            'pluginVersion' => '1.1.4'
                         ]
                     ],
                     'method' => \Laminas\Http\Request::METHOD_POST,

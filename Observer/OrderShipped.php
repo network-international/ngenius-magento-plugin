@@ -28,12 +28,13 @@ class OrderShipped implements ObserverInterface
      * Forces order into processing for ship action
      *
      * @param Observer $observer
+     *
      * @return void
      */
     public function execute(Observer $observer)
     {
         $shipment = $observer->getEvent()->getShipment();
-        $order = $shipment->getOrder();
+        $order    = $shipment->getOrder();
         if ($order->getPayment()->getMethodInstance()->getCode() === Config::CODE
             && $order->getState() !== Order::STATE_PROCESSING
         ) {

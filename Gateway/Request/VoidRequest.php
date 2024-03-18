@@ -32,8 +32,8 @@ class VoidRequest implements BuilderInterface
     /**
      * VoidRequest constructor.
      *
-     * @param Config                $config
-     * @param TokenRequest          $tokenRequest
+     * @param Config $config
+     * @param TokenRequest $tokenRequest
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
@@ -64,7 +64,7 @@ class VoidRequest implements BuilderInterface
         $paymentResult = json_decode($payment->getAdditionalInformation('paymentResult'));
 
         $transactionId = $paymentResult->reference;
-        $orderId = $paymentResult->orderReference;
+        $orderId       = $paymentResult->orderReference;
 
         if (!$transactionId) {
             throw new LocalizedException(__('No authorization transaction to proceed.'));

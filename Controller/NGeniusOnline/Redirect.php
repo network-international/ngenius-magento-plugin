@@ -59,13 +59,13 @@ class Redirect implements HttpGetActionInterface
     /**
      * Redirect constructor.
      *
-     * @param ResultFactory           $resultRedirect
-     * @param Session                 $checkoutSession
-     * @param LayoutFactory           $layoutFactory
+     * @param ResultFactory $resultRedirect
+     * @param Session $checkoutSession
+     * @param LayoutFactory $layoutFactory
      * @param CartRepositoryInterface $quoteRepository
-     * @param ManagerInterface        $messageManager
-     * @param ScopeConfigInterface    $scopeConfig
-     * @param Config                  $config
+     * @param ManagerInterface $messageManager
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Config $config
      */
     public function __construct(
         ResultFactory $resultRedirect,
@@ -74,7 +74,7 @@ class Redirect implements HttpGetActionInterface
         CartRepositoryInterface $quoteRepository,
         ManagerInterface $messageManager,
         ScopeConfigInterface $scopeConfig,
-        Config               $config,
+        Config $config,
     ) {
         $this->resultRedirect  = $resultRedirect;
         $this->checkoutSession = $checkoutSession;
@@ -93,7 +93,7 @@ class Redirect implements HttpGetActionInterface
      */
     public function execute()
     {
-        $order   = $this->checkoutSession->getLastRealOrder();
+        $order = $this->checkoutSession->getLastRealOrder();
 
         $storeId = $order->getStoreId();
 
@@ -108,8 +108,8 @@ class Redirect implements HttpGetActionInterface
         }
 
         $resultRedirectFactory = $this->resultRedirect->create(ResultFactory::TYPE_REDIRECT);
-        $initialStatus = $this->config->getInitialOrderStatus($storeId);
-        $order = $this->checkoutSession->getLastRealOrder();
+        $initialStatus         = $this->config->getInitialOrderStatus($storeId);
+        $order                 = $this->checkoutSession->getLastRealOrder();
         $order->setState($initialStatus);
         $order->setStatus($initialStatus);
         $order->addStatusHistoryComment(
@@ -122,7 +122,7 @@ class Redirect implements HttpGetActionInterface
             $exception = $url['exception'];
             $this->messageManager->addExceptionMessage($exception, $exception->getMessage());
             $resultRedirectFactory->setPath(self::CARTPATH);
-            $order   = $this->checkoutSession->getLastRealOrder();
+            $order = $this->checkoutSession->getLastRealOrder();
             $order->addCommentToStatusHistory($exception->getMessage());
             $order->setStatus('ngenius_failed');
             $order->setState(Order::STATE_CLOSED);

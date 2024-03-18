@@ -206,6 +206,7 @@ class Config extends \Magento\Payment\Gateway\Config\Config
      * @param int|null $storeId
      * @param string $action
      * @param string $currencyCode
+     *
      * @return string
      */
     public function getOrderRequestURL(?int $storeId, string $action, string $currencyCode): string

@@ -20,6 +20,6 @@ class Core extends AbstractDb
      */
     protected function _construct()
     {
-        $this->_init('ngenius_networkinternational', 'nid');
+        $this->_init('ngenius_networkinternational_sales_order', 'nid');
     }
 }

@@ -31,9 +31,9 @@ class OrderCancelAfter implements ObserverInterface
     protected $storeManager;
 
     /**
-     * @param Config                                                 $config
+     * @param Config $config
      * @param \Magento\Sales\Model\Order\Payment\Transaction\Builder $transactionBuilder
-     * @param StoreManagerInterface                                  $storeManager
+     * @param StoreManagerInterface $storeManager
      */
 
     public function __construct(Config $config, Builder $transactionBuilder, StoreManagerInterface $storeManager)
@@ -53,6 +53,12 @@ class OrderCancelAfter implements ObserverInterface
      */
     public function execute(Observer $observer): void
     {
+        $order = $observer->getOrder();
+
+        if ($order->getPayment()->getMethodInstance()->getCode() !== Config::CODE) {
+            return;
+        }
+
         $storeId = $this->storeManager->getStore()->getId();
 
         if ($this->config->getCustomFailedOrderStatus($storeId) != null) {

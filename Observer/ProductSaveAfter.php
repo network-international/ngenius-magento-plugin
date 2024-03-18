@@ -81,8 +81,8 @@ class ProductSaveAfter implements ObserverInterface
     {
         $lastRealOrder = $this->checkoutSession->getLastRealOrder();
         if ($lastRealOrder->getPayment() && $lastRealOrder->getData('state') === 'new' && ($lastRealOrder->getData(
-            'status'
-        ) === "payment_review")
+                    'status'
+                ) === "payment_review")
         ) {
             $this->checkoutSession->restoreQuote();
 

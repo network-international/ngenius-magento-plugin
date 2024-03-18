@@ -30,8 +30,8 @@ class VoidValidator extends AbstractValidator
      * VoidValidator constructor.
      *
      * @param ResultInterfaceFactory $resultFactory
-     * @param BuilderInterface       $transactionBuilder
-     * @param OrderFactory           $orderFactory
+     * @param BuilderInterface $transactionBuilder
+     * @param OrderFactory $orderFactory
      */
     public function __construct(
         ResultInterfaceFactory $resultFactory,
@@ -39,27 +39,28 @@ class VoidValidator extends AbstractValidator
         OrderFactory $orderFactory
     ) {
         $this->transactionBuilder = $transactionBuilder;
-        $this->orderFactory = $orderFactory;
+        $this->orderFactory       = $orderFactory;
         parent::__construct($resultFactory);
     }
 
     /**
      * Performs validation of result code
      *
-     * @param  array $validationSubject
+     * @param array $validationSubject
+     *
      * @return ResultInterface|null
      */
     public function validate(array $validationSubject)
     {
         try {
-            if (! empty($validationSubject)) {
+            if (!empty($validationSubject)) {
                 $response     = SubjectReader::readResponse($validationSubject);
                 $paymentDO    = SubjectReader::readPayment($validationSubject);
                 $orderAdapter = $paymentDO->getOrder();
 
                 $order = $this->orderFactory->create()->load($orderAdapter->getId());
 
-                if (! isset($response['result']) && ! is_array($response['result'])) {
+                if (!isset($response['result']) && !is_array($response['result'])) {
                     return $this->createResult(
                         false,
                         [__('Invalid void transaction.')]

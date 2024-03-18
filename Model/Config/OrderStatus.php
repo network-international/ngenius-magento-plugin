@@ -19,7 +19,6 @@ class OrderStatus implements ArrayInterface
      */
     public function toOptionArray()
     {
-
         $status = DataPatch::getStatuses();
 
         return [['value' => $status[0]['status'], 'label' => __($status[0]['label'])]];

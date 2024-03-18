@@ -7,7 +7,8 @@ class TransactionFetch extends PaymentTransaction
     /**
      * Processing of API response
      *
-     * @param  array $responseEnc
+     * @param array $responseEnc
+     *
      * @return array|null
      */
     protected function postProcess($responseEnc): ?array

@@ -1,10 +1,13 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
-    <preference for="Magento\Sales\Model\Order\Email\Sender\OrderSender" type="NetworkInternational\NGenius\Model\Email\OrderSender"/>
+    <preference for="Magento\Sales\Model\Order\Email\Sender\OrderSender"
+                type="NetworkInternational\NGenius\Model\Email\OrderSender"/>
     <type name="Magento\Quote\Observer\Webapi\SubmitObserver">
         <arguments>
-            <argument name="orderSender" xsi:type="object">NetworkInternational\NGenius\Model\Email\OrderSender</argument>
+            <argument name="orderSender" xsi:type="object">NetworkInternational\NGenius\Model\Email\OrderSender
+            </argument>
         </arguments>
     </type>
 
@@ -19,7 +22,8 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="NGeniusCaptureStrategyCommand" type="NetworkInternational\NGenius\Gateway\Command\CaptureStrategyCommand">
+    <virtualType name="NGeniusCaptureStrategyCommand"
+                 type="NetworkInternational\NGenius\Gateway\Command\CaptureStrategyCommand">
         <arguments>
             <argument name="commandPool" xsi:type="object">NGeniusCommandPool</argument>
         </arguments>
@@ -28,7 +32,8 @@
     <!-- Configuration reader -->
     <type name="NetworkInternational\NGenius\Gateway\Config\Config">
         <arguments>
-            <argument name="methodCode" xsi:type="const">\NetworkInternational\NGenius\Gateway\Config\Config::CODE</argument>
+            <argument name="methodCode" xsi:type="const">\NetworkInternational\NGenius\Gateway\Config\Config::CODE
+            </argument>
         </arguments>
     </type>
 
@@ -62,29 +67,45 @@
     <!-- Capture command -->
     <virtualType name="NGeniusCaptureCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
         <arguments>
-            <argument name="requestBuilder" xsi:type="object">NetworkInternational\NGenius\Gateway\Request\CaptureRequest</argument>
-            <argument name="transferFactory" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\TransferFactory</argument>
-            <argument name="client" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\Client\TransactionCapture</argument>
-            </arguments>
+            <argument name="requestBuilder" xsi:type="object">
+                NetworkInternational\NGenius\Gateway\Request\CaptureRequest
+            </argument>
+            <argument name="transferFactory" xsi:type="object">
+                NetworkInternational\NGenius\Gateway\Http\TransferFactory
+            </argument>
+            <argument name="client" xsi:type="object">
+                NetworkInternational\NGenius\Gateway\Http\Client\TransactionCapture
+            </argument>
+        </arguments>
     </virtualType>
 
 
     <!-- Void command -->
     <virtualType name="NGeniusVoidCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
         <arguments>
-            <argument name="requestBuilder" xsi:type="object">NetworkInternational\NGenius\Gateway\Request\VoidRequest</argument>
-            <argument name="transferFactory" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\TransferFactory</argument>
-            <argument name="client" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\Client\TransactionVoid</argument>
-            </arguments>
+            <argument name="requestBuilder" xsi:type="object">NetworkInternational\NGenius\Gateway\Request\VoidRequest
+            </argument>
+            <argument name="transferFactory" xsi:type="object">
+                NetworkInternational\NGenius\Gateway\Http\TransferFactory
+            </argument>
+            <argument name="client" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\Client\TransactionVoid
+            </argument>
+        </arguments>
     </virtualType>
 
     <!-- Refund Command -->
     <virtualType name="NGeniusRefundCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
         <arguments>
-            <argument name="requestBuilder" xsi:type="object">NetworkInternational\NGenius\Gateway\Request\RefundRequest</argument>
-            <argument name="transferFactory" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\TransferFactory</argument>
-            <argument name="client" xsi:type="object">NetworkInternational\NGenius\Gateway\Http\Client\TransactionRefund</argument>
-            </arguments>
+            <argument name="requestBuilder" xsi:type="object">
+                NetworkInternational\NGenius\Gateway\Request\RefundRequest
+            </argument>
+            <argument name="transferFactory" xsi:type="object">
+                NetworkInternational\NGenius\Gateway\Http\TransferFactory
+            </argument>
+            <argument name="client" xsi:type="object">
+                NetworkInternational\NGenius\Gateway\Http\Client\TransactionRefund
+            </argument>
+        </arguments>
     </virtualType>
     <!-- END Refund Command -->
 
@@ -98,7 +119,8 @@
     </virtualType>
     <virtualType name="NGeniusConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
-            <argument name="configInterface" xsi:type="object">NetworkInternational\NGenius\Gateway\Config\Config</argument>
+            <argument name="configInterface" xsi:type="object">NetworkInternational\NGenius\Gateway\Config\Config
+            </argument>
         </arguments>
     </virtualType>
 

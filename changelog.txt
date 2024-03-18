@@ -2,6 +2,13 @@
 Date                Version     Description
 =========================================================================
 
+2024-03-18: v1.1.4 : Add VISA additional mandatory fields to the Order API Request Body.
+                     Don't allow OrderCancelAfter Observer to trigger for other payment methods.
+                     Don't allow Cron to process orders created by other payment methods. 
+                     Change the cron table from ngenius_networkinternational to ngenius_networkinternational_sales_order to avoid the processing of historic orders.
+                     Fix Cron order processing of abandoned APM methods in a state of AWAIT_3DS.
+                     Improve payment action support for China Union Pay.
+
 2023-11-28: v1.1.3 : Cancel abandoned orders after one hour using the cron.
                      Add the ability to debug cron job order processing.
                      Update to N-Genius Common Class 1.0.6.

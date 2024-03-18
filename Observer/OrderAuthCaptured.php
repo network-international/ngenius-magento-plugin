@@ -26,11 +26,12 @@ class OrderAuthCaptured implements ObserverInterface
      * Order capture observer to set custom order statuses accordingly
      *
      * @param Observer $observer
+     *
      * @return void
      */
     public function execute(Observer $observer)
     {
-        $order      = $observer->getInvoice()->getOrder();
+        $order = $observer->getInvoice()->getOrder();
 
         $paymentResult = $order->getPayment()->getAdditionalInformation("paymentResult") ?? null;
 
@@ -38,12 +39,12 @@ class OrderAuthCaptured implements ObserverInterface
             return;
         }
 
-        $orderRef       = json_decode($paymentResult)->orderReference;
-        $collection    = $this->coreFactory->create()->getCollection()->addFieldToFilter(
+        $orderRef   = json_decode($paymentResult)->orderReference;
+        $collection = $this->coreFactory->create()->getCollection()->addFieldToFilter(
             'reference',
             $orderRef
         );
-        $orderItem     = $collection->getFirstItem();
+        $orderItem  = $collection->getFirstItem();
 
         if ($orderItem->getData()["action"] !== "AUTH"
             || (int)($orderItem->getData()["captured_amt"]) === 0

@@ -25,7 +25,7 @@ class Standard implements ObserverInterface
     /**
      * Standard constructor.
      *
-     * @param Session                                     $checkoutSession
+     * @param Session $checkoutSession
      * @param \Magento\Framework\Message\ManagerInterface $messageManager
      */
     public function __construct(
@@ -33,7 +33,7 @@ class Standard implements ObserverInterface
         \Magento\Framework\Message\ManagerInterface $messageManager
     ) {
         $this->checkoutSession = $checkoutSession;
-        $this->messageManager = $messageManager;
+        $this->messageManager  = $messageManager;
     }
 
     /**

@@ -121,10 +121,10 @@ class PurchaseRefund implements ObserverInterface
         Config $config,
         StoreManagerInterface $storeManager
     ) {
-        $this->logger        = $logger;
-        $this->coreFactory   = $coreFactory;
-        $this->config        = $config;
-        $this->storeManager  = $storeManager;
+        $this->logger       = $logger;
+        $this->coreFactory  = $coreFactory;
+        $this->config       = $config;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -144,14 +144,14 @@ class PurchaseRefund implements ObserverInterface
 
         $parentTransactionId = $payment->getParentTransactionId() !== null ? $payment->getParentTransactionId() : '';
 
-        $ptid = str_replace("-capture", "", $parentTransactionId);
+        $ptid       = str_replace("-capture", "", $parentTransactionId);
         $collection = $this->coreFactory->create()
-            ->getCollection()
-            ->addFieldToFilter('payment_id', $ptid);
+                                        ->getCollection()
+                                        ->addFieldToFilter('payment_id', $ptid);
 
         $orderItem  = $collection->getFirstItem();
         $itemStatus = $orderItem->getData('status') ?? "";
-        $itemState = $orderItem->getData('state') ?? "";
+        $itemState  = $orderItem->getData('state') ?? "";
 
         $storeId = $this->storeManager->getStore()->getId();
 

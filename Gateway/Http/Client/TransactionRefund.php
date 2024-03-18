@@ -43,12 +43,12 @@ class TransactionRefund extends PaymentTransaction
             $transactionId     = $refund_data['transactionId'] ?? $response['reference'];
 
             $collection = $this->coreFactory->create()
-                ->getCollection()
-                ->addFieldToFilter('reference', $response['orderReference']);
+                                            ->getCollection()
+                                            ->addFieldToFilter('reference', $response['orderReference']);
 
-            $orderItem  = $collection->getFirstItem();
+            $orderItem = $collection->getFirstItem();
 
-            $state      = $response['state'] ?? '';
+            $state = $response['state'] ?? '';
 
             if ($state === 'REVERSED') {
                 $captured_amt = (int)($orderItem->getData('captured_amt') * 100);
@@ -124,6 +124,7 @@ class TransactionRefund extends PaymentTransaction
      *
      * @param array $refund
      * @param float $refunded_amt
+     *
      * @return float|null
      */
     public function getAmountValue(array $refund, float $refunded_amt): ?float
@@ -135,6 +136,7 @@ class TransactionRefund extends PaymentTransaction
         ) {
             return (float)$refund['amount']['value'];
         }
+
         return null;
     }
 
@@ -142,6 +144,7 @@ class TransactionRefund extends PaymentTransaction
      * Gets NGenius payment refund data from response
      *
      * @param array $lastTransaction
+     *
      * @return array
      */
     public function getRefundData(mixed $lastTransaction): mixed
@@ -149,7 +152,7 @@ class TransactionRefund extends PaymentTransaction
         $refund_data = [];
         if (isset($lastTransaction['state'])
             && ($lastTransaction['state'] === 'SUCCESS'
-            || (isset($lastTransaction['_links'][self::NGENIUS_CUP_RESULTS])
+                || (isset($lastTransaction['_links'][self::NGENIUS_CUP_RESULTS])
                     && $lastTransaction['state'] === 'REQUESTED'))
             && isset($lastTransaction['amount']['value'])
         ) {

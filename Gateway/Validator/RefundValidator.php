@@ -31,8 +31,8 @@ class RefundValidator extends AbstractValidator
      * RefundValidator constructor.
      *
      * @param ResultInterfaceFactory $resultFactory
-     * @param BuilderInterface       $transactionBuilder
-     * @param OrderFactory           $orderFactory
+     * @param BuilderInterface $transactionBuilder
+     * @param OrderFactory $orderFactory
      */
     public function __construct(
         ResultInterfaceFactory $resultFactory,
@@ -74,15 +74,15 @@ class RefundValidator extends AbstractValidator
             ];
             $payment->setTransactionId($response['result']['payment_id']);
             $transaction = $this->transactionBuilder->setPayment($payment)
-                ->setOrder($order)
-                ->setTransactionId($response['result']['payment_id'])
-                ->setAdditionalInformation(
-                    [Transaction::RAW_DETAILS => (array)$paymentData]
-                )
-                ->setFailSafe(true)
-                ->build(
-                    Transaction::TYPE_CAPTURE
-                );
+                                                    ->setOrder($order)
+                                                    ->setTransactionId($response['result']['payment_id'])
+                                                    ->setAdditionalInformation(
+                                                        [Transaction::RAW_DETAILS => (array)$paymentData]
+                                                    )
+                                                    ->setFailSafe(true)
+                                                    ->build(
+                                                        Transaction::TYPE_CAPTURE
+                                                    );
             $payment->addTransactionCommentsToOrder($transaction, null);
             $payment->save();
             $order->addStatusToHistory(

@@ -23,7 +23,7 @@ class PaymentVoid implements ObserverInterface
     private CoreFactory $coreFactory;
 
     /**
-     * @param \Psr\Log\LoggerInterface                        $logger
+     * @param \Psr\Log\LoggerInterface $logger
      * @param \NetworkInternational\NGenius\Model\CoreFactory $coreFactory
      */
     public function __construct(LoggerInterface $logger, CoreFactory $coreFactory)
@@ -44,8 +44,8 @@ class PaymentVoid implements ObserverInterface
 
         $ptid       = $payment->getParentTransactionId();
         $collection = $this->coreFactory->create()
-            ->getCollection()
-            ->addFieldToFilter('payment_id', $ptid);
+                                        ->getCollection()
+                                        ->addFieldToFilter('payment_id', $ptid);
 
         $orderItem = $collection->getFirstItem();
         $reversed  = $orderItem->getData('state');
