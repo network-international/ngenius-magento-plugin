@@ -53,6 +53,7 @@ class Payment implements HttpGetActionInterface
     public const NGENIUS_STARTED    = 'STARTED';
     public const NGENIUS_PENDING    = 'PENDING';
     public const NGENIUS_AWAIT3DS   = 'AWAIT3DS';
+    public const NGENIUS_CANCELLED  = 'CANCELLED';
     public const NGENIUS_AUTHORISED = 'AUTHORISED';
     public const NGENIUS_PURCHASED  = 'PURCHASED';
     public const NGENIUS_CAPTURED   = 'CAPTURED';
@@ -126,7 +127,7 @@ class Payment implements HttpGetActionInterface
     protected $orderStatus;
 
     /**
-     * @var N-Genius state
+     * @var string
      */
     protected $ngeniusState;
 
@@ -298,17 +299,16 @@ class Payment implements HttpGetActionInterface
         $orderRef = $this->request->getParam('ref');
 
         if ($orderRef) {
-            $result = $this->getResponseAPI($orderRef);
+            $result = $this->getResponseAPI($orderRef, $storeId);
 
             $embedded = self::NGENIUS_EMBEDED;
             if ($result && isset($result[$embedded]['payment']) && is_array($result[$embedded]['payment'])) {
                 $action        = $result['action'] ?? '';
-                $paymentResult = $result[$embedded]['payment'][0];
                 $orderItem     = $this->fetchOrder('reference', $orderRef)->getFirstItem();
 
                 $apiProcessor = new ApiProcessor($result);
                 $apiProcessor->processPaymentAction($action, $this->ngeniusState);
-                $this->processOrder($paymentResult, $orderItem, $action);
+                $this->processOrder($apiProcessor, $orderItem, $action);
             }
             if ($this->error) {
                 $this->messageManager->addError(
@@ -340,23 +340,23 @@ class Payment implements HttpGetActionInterface
      * @throws LocalizedException
      * @throws ValidationException
      */
-    public function processOrder(array $paymentResult, object $orderItem, string $action): void
+    public function processOrder(ApiProcessor $apiProcessor, object $orderItem, string $action): void
     {
         $dataTable   = [];
         $incrementId = $orderItem->getOrderId();
 
         if ($incrementId) {
-            $paymentId = $this->getPaymentId($paymentResult);
+            $paymentId = $apiProcessor->getPaymentId();
 
             $order = $this->orderFactory->create()->loadByIncrementId($incrementId);
 
-            $storeId = $this->storeManager->getStore()->getId();
+            $storeId = $order->getStoreId();
 
             if ($order->getStatus() !== $this->config->getCustomSuccessOrderStatus($storeId)) {
                 if ($order->getId()) {
                     $dataTable               = $this->getCapturePayment(
                         $order,
-                        $paymentResult,
+                        $apiProcessor,
                         $paymentId,
                         $action,
                         $dataTable
@@ -390,26 +390,25 @@ class Payment implements HttpGetActionInterface
      */
     public function getCapturePayment(
         Order $order,
-        array $paymentResult,
+        ApiProcessor $apiProcessor,
         string $paymentId,
         string $action,
         array $dataTable
     ): array {
-        if ($this->ngeniusState != self::NGENIUS_FAILED) {
-            if ($this->ngeniusState != self::NGENIUS_STARTED) {
-                $order->setState(Order::STATE_PROCESSING);
-                $order->setStatus(Order::STATE_PROCESSING)->save();
-                $this->orderSender->send($order, true);
+        $paymentResult = $apiProcessor->getPaymentResult();
+        if ($apiProcessor->isPaymentConfirmed()) {
+            $order->setState(Order::STATE_PROCESSING);
+            $order->setStatus(Order::STATE_PROCESSING)->save();
+            $this->orderSender->send($order, true);
 
-                if ($action === "AUTH") {
-                    $this->orderAuthorize($order, $paymentResult, $paymentId);
-                } elseif ($action === "SALE" || $action === 'PURCHASE') {
-                    $dataTable['captured_amt'] = $this->orderSale($order, $paymentResult, $paymentId);
-                }
-                $dataTable['status'] = $order->getStatus();
-            } else {
-                $dataTable['status'] = Order::STATE_PENDING_PAYMENT;
+            if ($action === "AUTH") {
+                $this->orderAuthorize($order, $paymentResult, $paymentId);
+            } elseif ($action === "SALE" || $action === 'PURCHASE') {
+                $dataTable['captured_amt'] = $this->orderSale($order, $paymentResult, $paymentId);
             }
+            $dataTable['status'] = $order->getStatus();
+        } elseif($this->ngeniusState === self::NGENIUS_STARTED) {
+            $dataTable['status'] = Order::STATE_PENDING_PAYMENT;
         } else {
             // Authorisation has failed - cancel order
             // Reverse reserved stock
@@ -454,7 +453,7 @@ class Payment implements HttpGetActionInterface
 
             $payment->setAdditionalInformation(['raw_details_info' => json_encode($paymentResult)]);
 
-            $storeId = $this->storeManager->getStore()->getId();
+            $storeId = $order->getStoreId();
 
             if ($this->config->getCustomFailedOrderStatus($storeId) != null) {
                 $status = $this->config->getCustomFailedOrderStatus($storeId);
@@ -679,9 +678,8 @@ class Payment implements HttpGetActionInterface
      *
      * @throws NoSuchEntityException|CouldNotSaveException
      */
-    public function getResponseAPI($orderRef): array|bool
+    public function getResponseAPI($orderRef, $storeId = null): array|bool
     {
-        $storeId = $this->storeManager->getStore()->getId();
         $request = [
             'token'   => $this->tokenRequest->getAccessToken($storeId),
             'request' => [
@@ -740,49 +738,75 @@ class Payment implements HttpGetActionInterface
             'DESC'
         );
         if ($orderItems) {
-            $this->logger->info("N-GENIUS Found " . count($orderItems) . " unprocessed order(s)");
+            $this->logger->info("N-GENIUS: Found " . count($orderItems) . " unprocessed order(s)");
             $counter = 0;
             foreach ($orderItems as $orderItem) {
+                if ($counter >= 5) {
+                    $this->logger->info("N-GENIUS: Breaking loop at 5 orders to avoid timeout");
+                    break;
+                }
+
                 $orderItem->setState('cron');
                 $orderItem->setStatus('cron');
                 $orderItem->save();
+
+                $orderRef    = $orderItem->getReference();
+                $incrementId = $orderItem->getOrderId();
+
+                $order = $this->orderFactory->create()->loadByIncrementId($incrementId);
+
+                if (!$order->getId()) {
+                    $this->logger->info("N-GENIUS: Magento order not found");
+                    break;
+                }
+
                 try {
-                    if ($counter >= 5) {
-                        $this->logger->info("N-GENIUS Breaking loop at 5 orders to avoid timeout...");
-                        break;
-                    }
-
-                    $orderRef    = $orderItem->getReference();
-                    $incrementId = $orderItem->getOrderId();
-
-                    $order = $this->orderFactory->create()->loadByIncrementId($incrementId);
-
                     if ($order->getPayment()->getMethod() !== 'ngeniusonline') {
-                        $this->logger->info("Order#" . $incrementId . " will not be processed.");
+                        $this->logger->info("N-GENIUS: Order#" . $incrementId . " will not be processed");
                         continue;
                     }
 
-                    $this->logger->info("N-GENIUS Processing order $incrementId...");
+                    $this->logger->info("N-GENIUS: Processing order $incrementId");
 
-                    $result   = $this->getResponseAPI($orderRef);
+                    $order->addStatusHistoryComment(
+                        __('This is order is being processed by the cron.')
+                    )->save();
+
+                    $storeId = $order->getStoreId();
+
+                    $result   = $this->getResponseAPI($orderRef, $storeId);
                     $embedded = self::NGENIUS_EMBEDED;
                     if ($result && isset($result[$embedded]['payment']) && is_array($result[$embedded]['payment'])) {
                         $action        = $result['action'] ?? '';
-                        $paymentResult = $result[$embedded]['payment'][0];
-                        $this->logger->info('N-GENIUS state is ' . $paymentResult['state']);
+
+                        $apiProcessor = new ApiProcessor($result);
+                        $paymentResult = $apiProcessor->getPaymentResult();
+                        $this->logger->info('N-GENIUS: state is ' . $paymentResult['state']);
                         if ($paymentResult['state'] === self::NGENIUS_STARTED
                             || $paymentResult['state'] === self::NGENIUS_AWAIT3DS
                             || $paymentResult['state'] == self::NGENIUS_PENDING
+                            || $paymentResult['state'] == self::NGENIUS_CANCELLED
                         ) {
                             $paymentResult['state'] = "FAILED";
                             $this->ngeniusState     = self::NGENIUS_FAILED;
                         }
-                        $this->processOrder($paymentResult, $orderItem, $action);
+                        $this->processOrder($apiProcessor, $orderItem, $action);
+                    } else {
+                        $this->logger->info("N-GENIUS: Payment result not found");
+                        $order->addStatusHistoryComment(
+                            __('N-GENIUS Payment result not found.')
+                        )->save();
+                        $this->logger->info("N-GENIUS: Result " . json_encode($result));
                     }
+
+                    $order->save();
 
                     $counter++;
                 } catch (Exception $e) {
-                    $this->logger->debug("N-GENIUS EXCEPTION: " . $e->getMessage());
+                    $this->logger->info('N-GENIUS: exception ' . $e->getMessage());
+                    $order->addStatusHistoryComment(
+                        __('N-GENIUS: Exception ' . $e->getMessage())
+                    )->save();
                 }
             }
         }
@@ -837,7 +861,7 @@ class Payment implements HttpGetActionInterface
     private function updateOrderStatus(Order $order, ?string $status, string $message): void
     {
         //Check For Custom Order Status on Payment Complete
-        $storeId = $this->storeManager->getStore()->getId();
+        $storeId = $order->getStoreId();
 
         if ($this->config->getCustomSuccessOrderStatus($storeId) != null) {
             $status = $this->config->getCustomSuccessOrderStatus($storeId);
