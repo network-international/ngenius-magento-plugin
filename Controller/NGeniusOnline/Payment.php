@@ -799,8 +799,6 @@ class Payment implements HttpGetActionInterface
                         $this->logger->info("N-GENIUS: Result " . json_encode($result));
                     }
 
-                    $order->save();
-
                     $counter++;
                 } catch (Exception $e) {
                     $this->logger->info('N-GENIUS: exception ' . $e->getMessage());
