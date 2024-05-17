@@ -2,9 +2,12 @@
 Date                Version     Description
 =========================================================================
 
+2024-05-17: v1.1.5 : Improve cron job process workflow and multi-site support.
+                     Bug fixes and improvements.
+
 2024-03-18: v1.1.4 : Add VISA additional mandatory fields to the Order API Request Body.
                      Don't allow OrderCancelAfter Observer to trigger for other payment methods.
-                     Don't allow Cron to process orders created by other payment methods. 
+                     Don't allow Cron to process orders created by other payment methods.
                      Change the cron table from ngenius_networkinternational to ngenius_networkinternational_sales_order to avoid the processing of historic orders.
                      Fix Cron order processing of abandoned APM methods in a state of AWAIT_3DS.
                      Improve payment action support for China Union Pay.

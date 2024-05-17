@@ -105,7 +105,7 @@ class CaptureRequest implements BuilderInterface
                         ],
                         'merchantDefinedData' => [
                             'pluginName'    => 'magento-2',
-                            'pluginVersion' => '1.1.4'
+                            'pluginVersion' => '1.1.5'
                         ]
                     ],
                     'method' => \Laminas\Http\Request::METHOD_POST,

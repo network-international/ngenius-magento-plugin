@@ -128,7 +128,7 @@ class RefundRequest implements BuilderInterface
                         ],
                         'merchantDefinedData' => [
                             'pluginName'    => 'magento-2',
-                            'pluginVersion' => '1.1.4'
+                            'pluginVersion' => '1.1.5'
                         ]
                     ],
                     'method' => $method,
