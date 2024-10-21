@@ -142,13 +142,13 @@ class PaymentTransaction implements ClientInterface
         if (isset($response->_links->payment->href)) {
             $data = $this->checkoutSession->getData();
 
-            $amount = (float)$response->amount->value;
+            $amount = $response->amount->value;
 
             $currencyCode = $response->amount->currencyCode;
 
             $data['reference'] = $response->reference ?? '';
             $data['action']    = $response->action ?? '';
-            $data['amount']    = ValueFormatter::formatOrderStatusAmount($currencyCode, $amount) / 100;
+            $data['amount']    = ValueFormatter::intToFloatRepresentation($currencyCode, $amount);
             $data['state']     = $response->_embedded->payment[0]->state ?? '';
             $data['status']    = $this->orderStatus[0]['status'];
             $data['order_id']  = $data['last_real_order_id'];

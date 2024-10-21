@@ -13,6 +13,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use NetworkInternational\NGenius\Gateway\Http\Client\PaymentTransaction;
 use NetworkInternational\NGenius\Gateway\Request\PaymentRequest;
 use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
+use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 
 /**
  * Class Info
@@ -96,7 +97,8 @@ class Ngenius extends ConfigurableInfo
             $order = $this->orderFactory->loadByIncrementId($incrementId);
 
             $storeId = $order->getStoreId();
-            $amount  = $order->getGrandTotal() * 100;
+            $amount  = ValueFormatter::floatToIntRepresentation($order->getOrderCurrencyCode(),
+                                                                $order->getGrandTotal());
 
             if (in_array($ngeniusPaymentAction, $this->allowedActions)) {
                 $requestData = [

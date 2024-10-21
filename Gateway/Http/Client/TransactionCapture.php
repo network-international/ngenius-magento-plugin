@@ -8,48 +8,51 @@ namespace NetworkInternational\NGenius\Gateway\Http\Client;
 
 use Magento\Framework\Exception\NoSuchEntityException;
 use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
+use Ngenius\NgeniusCommon\Processor\TransactionProcessor;
 
 class TransactionCapture extends PaymentTransaction
 {
     /**
      * Processing of API response
      *
-     * @param array $responseEnc
+     * @param string $responseEnc
      *
      * @return null|array
      * @throws NoSuchEntityException
      */
-    protected function postProcess($responseEnc): ?array
+    protected function postProcess(string $responseEnc): ?array
     {
-        $response = json_decode($responseEnc, true);
+        $responseArray = json_decode($responseEnc, true);
 
-        if (isset($response['errors']) && is_array($response['errors'])) {
+        if (isset($responseArray['errors']) && is_array($responseArray['errors'])) {
             return null;
         } else {
-            $transaction_data = $this->getTransactionData($response);
-            $amount           = $transaction_data['amount'];
-            $lastTransaction  = $transaction_data['last_transaction'];
-            $captured_amt     = 0;
-            $currencyCode     = $lastTransaction['amount']['currencyCode'] ?? '';
-            $amount           = ($amount > 0) ? ValueFormatter::formatOrderStatusAmount(
+            $transactionProcessor = new TransactionProcessor($responseArray);
+            $totalCapturedAmount = $transactionProcessor->getTotalCaptured();
+            $lastTransaction = $transactionProcessor->getLastCaptureTransaction();
+            $transactionId = $transactionProcessor->getTransactionId($lastTransaction);
+
+            $currencyCode = $lastTransaction['amount']['currencyCode'] ?? '';
+            $totalCapturedAmount = ($totalCapturedAmount > 0) ? ValueFormatter::intToFloatRepresentation(
                 $currencyCode,
-                ($amount / 100)
+                $totalCapturedAmount
             ) : 0;
 
+            $capturedAmount     = 0;
             if (isset($lastTransaction['state'])
                 && ($lastTransaction['state'] == 'SUCCESS')
                 && isset($lastTransaction['amount']['value'])
             ) {
-                $value        = $lastTransaction['amount']['value'] / 100;
-                $captured_amt = ValueFormatter::formatOrderStatusAmount($currencyCode, $value);
+                $capturedAmount = ValueFormatter::intToFloatRepresentation($currencyCode, $transactionProcessor->getTransactionAmount($lastTransaction));
+
+                ValueFormatter::formatCurrencyDecimals($currencyCode, $capturedAmount);
             }
 
-            $transactionId = $this->getTransactionId($lastTransaction);
-            $collection    = $this->coreFactory->create()->getCollection()->addFieldToFilter(
+            $collection = $this->coreFactory->create()->getCollection()->addFieldToFilter(
                 'reference',
-                $response['orderReference']
+                $responseArray['orderReference']
             );
-            $orderItem     = $collection->getFirstItem();
+            $orderItem = $collection->getFirstItem();
 
             $storeId = $this->storeManager->getStore()->getId();
 
@@ -59,71 +62,22 @@ class TransactionCapture extends PaymentTransaction
                 $status = 'processing';
             }
 
-            $state = $response['state'];
+            $state = $responseArray['state'];
 
             $orderItem->setState($state);
             $orderItem->setStatus($status);
-            $orderItem->setCapturedAmt($amount);
+            $orderItem->setCapturedAmt($capturedAmount);
             $orderItem->save();
 
             return [
                 'result' => [
-                    'total_captured' => $amount,
-                    'captured_amt'   => $captured_amt,
+                    'total_captured' => $totalCapturedAmount,
+                    'captured_amt'   => $capturedAmount,
                     'state'          => $state,
                     'order_status'   => $status,
                     'payment_id'     => $transactionId
                 ]
             ];
         }
-    }
-
-    /**
-     * Retrieves transaction link
-     *
-     * @param array $lastTransaction
-     *
-     * @return false|string
-     */
-    public function getTransactionId(array $lastTransaction): bool|string
-    {
-        if (isset($lastTransaction['_links']['self']['href'])) {
-            $transactionArr = explode('/', $lastTransaction['_links']['self']['href']);
-
-            return end($transactionArr);
-        }
-
-        return false;
-    }
-
-    /**
-     * Gets NGenius payment data
-     *
-     * @param array $response
-     *
-     * @return array
-     */
-    public function getTransactionData(mixed $response): mixed
-    {
-        $embedded        = "_embedded";
-        $cnpcapture      = "cnp:capture";
-        $amount          = 0;
-        $lastTransaction = "";
-        if (isset($response[$embedded][$cnpcapture]) && is_array($response[$embedded][$cnpcapture])) {
-            $lastTransaction = end($response[$embedded][$cnpcapture]);
-            foreach ($response[$embedded][$cnpcapture] as $capture) {
-                if (isset($capture['state'])
-                    && ($capture['state'] == 'SUCCESS')
-                    && isset($capture['amount']['value'])
-                ) {
-                    $amount += $capture['amount']['value'];
-                }
-            }
-        }
-
-        return [
-            'amount'           => $amount,
-            'last_transaction' => $lastTransaction
-        ];
     }
 }

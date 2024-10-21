@@ -298,13 +298,18 @@ class Payment implements HttpGetActionInterface
 
         $orderRef = $this->request->getParam('ref');
 
+        $orderItem     = $this->fetchOrder('reference', $orderRef)->getFirstItem();
+
+        if (!empty($orderItem->getPaymentId())) {
+            return $resultRedirectFactory->setPath('checkout/onepage/success');
+        }
+
         if ($orderRef) {
             $result = $this->getResponseAPI($orderRef, $storeId);
 
             $embedded = self::NGENIUS_EMBEDED;
             if ($result && isset($result[$embedded]['payment']) && is_array($result[$embedded]['payment'])) {
                 $action        = $result['action'] ?? '';
-                $orderItem     = $this->fetchOrder('reference', $orderRef)->getFirstItem();
 
                 $apiProcessor = new ApiProcessor($result);
                 $apiProcessor->processPaymentAction($action, $this->ngeniusState);

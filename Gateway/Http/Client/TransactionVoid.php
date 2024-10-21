@@ -2,6 +2,7 @@
 
 namespace NetworkInternational\NGenius\Gateway\Http\Client;
 
+use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Payment\Model\Method\Logger;
@@ -79,12 +80,12 @@ class TransactionVoid extends PaymentTransaction
     /**
      * Processing of API response
      *
-     * @param array $responseEnc
+     * @param string $responseEnc
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function postProcess($responseEnc): ?array
+    protected function postProcess(string $responseEnc): array
     {
         $response = json_decode($responseEnc, true);
 
