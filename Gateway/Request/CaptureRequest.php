@@ -13,6 +13,7 @@ use NetworkInternational\NGenius\Model\CoreFactory;
 use Magento\Payment\Helper\Formatter;
 use Laminas\Http\Request;
 use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
+use NetworkInternational\NGenius\Helper\Version;
 
 /**
  * Request builder for payment captures
@@ -89,10 +90,9 @@ class CaptureRequest implements BuilderInterface
                                         ->addFieldToFilter('order_id', $order->getOrderIncrementId());
         $orderItem  = $collection->getFirstItem();
 
-        $amount       = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
+        $formatPrice       = $this->formatPrice(SubjectReader::readAmount($buildSubject));
         $currencyCode = $orderItem->getCurrency();
-
-        ValueFormatter::formatCurrencyAmount($currencyCode, $amount);
+        $amount = ValueFormatter::floatToIntRepresentation($currencyCode, $formatPrice);
 
         if ($this->config->isComplete($storeId)) {
             return [
@@ -105,7 +105,7 @@ class CaptureRequest implements BuilderInterface
                         ],
                         'merchantDefinedData' => [
                             'pluginName'    => 'magento-2',
-                            'pluginVersion' => '1.1.5'
+                            'pluginVersion' => Version::MODULE_VERSION
                         ]
                     ],
                     'method' => \Laminas\Http\Request::METHOD_POST,

@@ -10,6 +10,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Helper\Formatter;
+use NetworkInternational\NGenius\Helper\Version;
 use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 use Ngenius\NgeniusCommon\NgeniusUtilities;
 
@@ -79,7 +80,8 @@ class PaymentRequest implements BuilderInterface
         $paymentDO->getPayment()->setIsTransactionPending(true);
         $order   = $paymentDO->getOrder();
         $storeId = $order->getStoreId();
-        $amount  = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
+        $formatPrice       = $this->formatPrice(SubjectReader::readAmount($buildSubject));
+        $amount = ValueFormatter::floatToIntRepresentation($order->getCurrencyCode(), $formatPrice);
 
         if ($this->config->isComplete($storeId)) {
             $this->setTableData($order);
@@ -126,14 +128,12 @@ class PaymentRequest implements BuilderInterface
         $countryCode  = $order->getBillingAddress()->getCountryId();
         $utilities    = new NgeniusUtilities();
 
-        ValueFormatter::formatCurrencyAmount($currencyCode, $amount);
-
         return [
             'data'   => [
                 'action'                 => $action,
                 'amount'                 => [
                     'currencyCode' => $currencyCode,
-                    'value'        => (int)$amount
+                    'value'        => $amount,
                 ],
                 'merchantAttributes'     => [
                     'redirectUrl'          => $this->urlBuilder->getDirectUrl(
@@ -160,7 +160,7 @@ class PaymentRequest implements BuilderInterface
                 ],
                 'merchantDefinedData'    => [
                     'pluginName'    => 'magento-2',
-                    'pluginVersion' => '1.1.5'
+                    'pluginVersion' => Version::MODULE_VERSION
                 ]
             ],
             'method' => \Laminas\Http\Request::METHOD_POST,

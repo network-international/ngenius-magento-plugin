@@ -10,6 +10,7 @@ use Magento\Payment\Helper\Formatter;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use NetworkInternational\NGenius\Gateway\Config\Config;
+use NetworkInternational\NGenius\Helper\Version;
 use NetworkInternational\NGenius\Model\CoreFactory;
 use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 use Ngenius\NgeniusCommon\NgeniusHTTPCommon;
@@ -108,10 +109,9 @@ class RefundRequest implements BuilderInterface
         $token = $this->tokenRequest->getAccessToken($storeId);
         list($refund_url, $method, $error) = $this->getRefundUrl($token, $orderReference);
 
-        $amount       = $this->formatPrice(SubjectReader::readAmount($buildSubject)) * 100;
+        $formatPrice       = $this->formatPrice(SubjectReader::readAmount($buildSubject));
         $currencyCode = $order_details->getOrderCurrencyCode();
-
-        ValueFormatter::formatCurrencyAmount($currencyCode, $amount);
+        $amount = ValueFormatter::floatToIntRepresentation($currencyCode, $formatPrice);
 
         if ($error) {
             throw new LocalizedException(__($error));
@@ -128,7 +128,7 @@ class RefundRequest implements BuilderInterface
                         ],
                         'merchantDefinedData' => [
                             'pluginName'    => 'magento-2',
-                            'pluginVersion' => '1.1.5'
+                            'pluginVersion' => Version::MODULE_VERSION
                         ]
                     ],
                     'method' => $method,
