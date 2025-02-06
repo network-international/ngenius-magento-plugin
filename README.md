@@ -1,4 +1,4 @@
-# N-Genius Magento Plugin
+# N-Genius Online by Network Magento Plugin
 
 ![Banner](assets/banner.jpeg)
 

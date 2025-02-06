@@ -52,8 +52,10 @@ class OrderAuthCaptured implements ObserverInterface
             return;
         }
 
-        $order->setState($orderItem->getData()["state"]);
-        $order->setStatus($orderItem->getData()["status"]);
-        $order->save();
+        if ($order->canShip()) {
+            $order->setState($orderItem->getData()["state"]);
+            $order->setStatus($orderItem->getData()["status"]);
+            $order->save();
+        }
     }
 }

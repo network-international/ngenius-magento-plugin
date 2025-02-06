@@ -6,7 +6,7 @@
         <payment>
             <ngeniusonline>
                 <active>0</active>
-                <title>N-Genius Payment Gateway</title>
+                <title>N-Genius Online by Network</title>
                 <model>NGeniusFacade</model>
                 <environment>uat</environment>
                 <is_gateway>1</is_gateway>
@@ -33,7 +33,7 @@
                 <allowspecific>0</allowspecific>
                 <debug_cron>0</debug_cron>
                 <active>1</active>
-                <title>N-Genius Online Payment Gateway</title>
+                <title>N-Genius Online by Network</title>
                 <environment>uat</environment>
                 <uat_api_url><![CDATA[https://api-gateway.sandbox.ngenius-payments.com]]></uat_api_url>
                 <live_api_url><![CDATA[https://api-gateway.ngenius-payments.com]]></live_api_url>
