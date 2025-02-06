@@ -4,7 +4,7 @@
         <section id="payment">
             <group id="ngeniusonline" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1"
                    showInStore="1">
-                <label>N-Genius Online</label>
+                <label>N-Genius Online by Network</label>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Enabled</label>
