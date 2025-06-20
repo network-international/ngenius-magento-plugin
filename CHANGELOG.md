@@ -1,5 +1,20 @@
 # Changelog
 
+## [[1.2.0]](https://github.com/network-international/ngenius-magento-plugin/releases/tag/1.2.0)
+
+### Added
+
+- Updated to the Network logo.
+- Support for Adobe Commerce Marketplace.
+
+### Fixed
+
+- Fixed a bug that caused errors during checkout when using multi-shipping functionality.
+
+### Tested
+
+- Compatibility with N-Genius Common Library v1.3.0.
+
 ## [[1.1.7]](https://github.com/network-international/ngenius-magento-plugin/releases/tag/1.1.7)
 
 ### Fixed

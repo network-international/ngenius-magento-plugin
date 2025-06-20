@@ -2,8 +2,8 @@
 
 namespace NetworkInternational\NGenius\Observer;
 
-use Magento\Framework\Event\ObserverInterface;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\Event\ObserverInterface;
 
 /**
  * NGenius checkout info observer implementation

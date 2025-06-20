@@ -3,9 +3,9 @@
 namespace NetworkInternational\NGenius\Controller\NGeniusOnline;
 
 use Exception;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -13,8 +13,8 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\View\LayoutFactory;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Model\Order;
-use NetworkInternational\NGenius\Gateway\Config\Config;
 use NetworkInternational\NGenius\Block\Ngenius;
+use NetworkInternational\NGenius\Gateway\Config\Config;
 
 /**
  * Class Redirect

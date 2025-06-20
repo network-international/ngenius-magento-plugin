@@ -3,12 +3,12 @@ define(
     'uiComponent',
     'Magento_Checkout/js/model/payment/renderer-list'
   ],
-  function (Component, rendererList) {
+  function (Component, rendererList){
     'use strict'
 
     rendererList.push(
       {
-        type: 'ngeniusonline',
+        type     : 'ngeniusonline',
         component: 'NetworkInternational_NGenius/js/view/payment/method-renderer/ngeniusonline'
       }
     )

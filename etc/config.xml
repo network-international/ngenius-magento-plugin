@@ -33,6 +33,7 @@
                 <allowspecific>0</allowspecific>
                 <debug_cron>0</debug_cron>
                 <active>1</active>
+                <can_use_for_multishipping>1</can_use_for_multishipping>
                 <title>N-Genius Online by Network</title>
                 <environment>uat</environment>
                 <uat_api_url><![CDATA[https://api-gateway.sandbox.ngenius-payments.com]]></uat_api_url>
@@ -41,6 +42,7 @@
                 <outlet_ref_2_currencies>AED</outlet_ref_2_currencies>
                 <token_endpoint><![CDATA[/auth/realms/%s/protocol/openid-connect/token]]></token_endpoint>
                 <order_endpoint><![CDATA[/transactions/outlets/%s/orders]]></order_endpoint>
+                <paybylink_endpoint><![CDATA[/invoices/outlets/%s/invoice]]></paybylink_endpoint>
                 <fetch_endpoint><![CDATA[/transactions/outlets/%s/orders/%s]]></fetch_endpoint>
                 <capture_endpoint><![CDATA[/transactions/outlets/%s/orders/%s/payments/%s/captures]]></capture_endpoint>
                 <void_auth_endpoint>

@@ -19,16 +19,14 @@ class OrderCancelAfter implements ObserverInterface
      * @var Config
      */
     protected $config;
-
-    /**
-     * @var \Magento\Sales\Model\Order\Payment\Transaction\Builder
-     */
-    private Builder $transactionBuilder;
-
     /**
      * @var StoreManagerInterface
      */
     protected $storeManager;
+    /**
+     * @var \Magento\Sales\Model\Order\Payment\Transaction\Builder
+     */
+    private Builder $transactionBuilder;
 
     /**
      * @param Config $config

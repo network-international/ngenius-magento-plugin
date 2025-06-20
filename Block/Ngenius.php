@@ -2,7 +2,6 @@
 
 namespace NetworkInternational\NGenius\Block;
 
-use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
@@ -97,8 +96,10 @@ class Ngenius extends ConfigurableInfo
             $order = $this->orderFactory->loadByIncrementId($incrementId);
 
             $storeId = $order->getStoreId();
-            $amount  = ValueFormatter::floatToIntRepresentation($order->getOrderCurrencyCode(),
-                                                                $order->getGrandTotal());
+            $amount  = ValueFormatter::floatToIntRepresentation(
+                $order->getOrderCurrencyCode(),
+                $order->getGrandTotal()
+            );
 
             if (in_array($ngeniusPaymentAction, $this->allowedActions)) {
                 $requestData = [

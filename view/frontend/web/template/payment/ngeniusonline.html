@@ -1,18 +1,18 @@
 <div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
     <div class="payment-method-title field choice">
-        <label>
-            <input type="radio"
-                   name="payment[method]"
-                   class="radio"
-                   data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()">
-        </label>
-        <label data-bind="attr: {'for': getCode()}" class="label">
+        <input class="radio"
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"
+               name="payment[method]"
+               type="radio">
+        <label class="label" data-bind="attr: {'for': getCode()}">
+            <img alt="N-Genius Logo" class="payment-icon"
+                 data-bind="attr: {src: getLogoSrc(), alt: $t('N-Genius Logo')}"/>
             <span data-bind="text: getTitle()"></span>
         </label>
     </div>
     <div class="payment-method-content">
 
-        <div role="alert" class="message message-success success" id="ngenius_redirect_msg" style="display: none">
+        <div class="message message-success success" id="ngenius_redirect_msg" role="alert" style="display: none">
             <div>Redirecting to Payment Gateway. Please wait..</div>
         </div>
         <!-- ko foreach: getRegion('messages') -->
@@ -32,16 +32,16 @@
 
         <div class="actions-toolbar">
             <div class="primary">
-                <button data-role="review-save"
-                        type="submit"
+                <button class="action primary checkout"
                         data-bind="
                         attr: {title: $t('Place Order')},
                         enable: (getCode() == isChecked()),
                         click: placeOrder,
                         css: {disabled: !isPlaceOrderActionAllowed()}
                         "
-                        class="action primary checkout"
-                        disabled>
+                        data-role="review-save"
+                        disabled
+                        type="submit">
                     <span data-bind="i18n: 'Place Order'"></span>
                 </button>
             </div>

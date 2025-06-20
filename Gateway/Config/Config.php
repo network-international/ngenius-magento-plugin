@@ -33,6 +33,7 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     public const LIVE_API_URL            = 'live_api_url';
     public const TOKEN_ENDPOINT          = '/identity/auth/access-token';
     public const ORDER_ENDPOINT          = 'order_endpoint';
+    public const PAYBYLINK_ENDPOINT      = 'paybylink_endpoint';
     public const FETCH_ENDPOINT          = 'fetch_endpoint';
     public const CAPTURE_ENDPOINT        = 'capture_endpoint';
     public const REFUND_ENDPOINT         = 'refund_endpoint';
@@ -67,54 +68,6 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     ) {
         \Magento\Payment\Gateway\Config\Config::__construct($scopeConfig, $methodCode, $pathPattern);
         $this->coreFactory = $coreFactory;
-    }
-
-    /**
-     * Gets value of configured environment. Possible values: live or uat.
-     *
-     * @param int|null $storeId
-     *
-     * @return string
-     */
-    public function getEnvironment($storeId = null)
-    {
-        return $this->getValue(Config::ENVIRONMENT, $storeId);
-    }
-
-    /**
-     * Gets Api Key.
-     *
-     * @param int|null $storeId
-     *
-     * @return string
-     */
-    public function getApiKey($storeId = null)
-    {
-        return $this->getValue(Config::API_KEY, $storeId);
-    }
-
-    /**
-     * Gets Outlet Reference ID.
-     *
-     * @param int|null $storeId
-     *
-     * @return string
-     */
-    public function getOutletReferenceId(int $storeId = null): string
-    {
-        return $this->getValue(Config::OUTLET_REF, $storeId);
-    }
-
-    /**
-     * Gets Outlet Reference 2 ID.
-     *
-     * @param int|null $storeId
-     *
-     * @return string
-     */
-    public function getOutletReference2Id(int $storeId = null): string
-    {
-        return $this->getValue(self::OUTLET_REF_2, $storeId);
     }
 
     /**
@@ -159,6 +112,42 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     }
 
     /**
+     * Gets Api Key.
+     *
+     * @param int|null $storeId
+     *
+     * @return string
+     */
+    public function getApiKey($storeId = null)
+    {
+        return $this->getValue(Config::API_KEY, $storeId);
+    }
+
+    /**
+     * Gets Outlet Reference ID.
+     *
+     * @param int|null $storeId
+     *
+     * @return string
+     */
+    public function getOutletReferenceId(int $storeId = null): string
+    {
+        return $this->getValue(Config::OUTLET_REF, $storeId);
+    }
+
+    /**
+     * Gets token request URL.
+     *
+     * @param int|null $storeId
+     *
+     * @return string
+     */
+    public function getTokenRequestURL($storeId = null)
+    {
+        return $this->getApiUrl($storeId) . self::TOKEN_ENDPOINT;
+    }
+
+    /**
      * Gets API URL.
      *
      * @param int|null $storeId
@@ -177,15 +166,15 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     }
 
     /**
-     * Gets token request URL.
+     * Gets value of configured environment. Possible values: live or uat.
      *
      * @param int|null $storeId
      *
      * @return string
      */
-    public function getTokenRequestURL($storeId = null)
+    public function getEnvironment($storeId = null)
     {
-        return $this->getApiUrl($storeId) . self::TOKEN_ENDPOINT;
+        return $this->getValue(Config::ENVIRONMENT, $storeId);
     }
 
     /**
@@ -231,6 +220,48 @@ class Config extends \Magento\Payment\Gateway\Config\Config
     }
 
     /**
+     * Gets Outlet Reference 2 ID.
+     *
+     * @param int|null $storeId
+     *
+     * @return string
+     */
+    public function getOutletReference2Id(int $storeId = null): string
+    {
+        return $this->getValue(self::OUTLET_REF_2, $storeId);
+    }
+
+    /**
+     * Gets PayByLink URL.
+     *
+     * @param int|null $storeId
+     * @param string $action
+     * @param string $currencyCode
+     *
+     * @return string
+     */
+    public function getPayByLinkUrl(?int $storeId, string $action, string $currencyCode)
+    {
+        $outlet2ReferenceId         = $this->getValue(self::OUTLET_REF_2, $storeId);
+        $outlet2ReferenceCurrencies = $this->getValue(self::OUTLET_REF_2_CURRENCIES, $storeId) ?? '';
+        $outlet2ReferenceCurrencies = explode(',', $outlet2ReferenceCurrencies);
+
+        if ($outlet2ReferenceId && in_array($currencyCode, $outlet2ReferenceCurrencies)) {
+            $endpoint = sprintf(
+                $this->getValue(Config::PAYBYLINK_ENDPOINT, $storeId),
+                $this->getOutletReference2Id($storeId)
+            );
+        } else {
+            $endpoint = sprintf(
+                $this->getValue(Config::PAYBYLINK_ENDPOINT, $storeId),
+                $this->getOutletReferenceId($storeId)
+            );
+        }
+
+        return $this->getApiUrl($storeId) . $endpoint;
+    }
+
+    /**
      * Gets fetch URL.
      *
      * @param string $orderRef
@@ -247,6 +278,36 @@ class Config extends \Magento\Payment\Gateway\Config\Config
         );
 
         return $this->getApiUrl($storeId) . $endpoint;
+    }
+
+    /**
+     * Gets true outlet ID for order from Magento DB
+     *
+     * @param string $orderRef
+     * @param int|null $storeId
+     *
+     * @return string
+     */
+    private function getTrueOutletReferenceId(string $orderRef, ?int $storeId): string
+    {
+        $collection   = $this->coreFactory->create()->getCollection()->addFieldToFilter(
+            'reference',
+            $orderRef
+        );
+        $orderItem    = $collection->getFirstItem();
+        $currencyCode = $orderItem->getDataByKey('currency');
+
+        $outlet2ReferenceId         = $this->getValue(self::OUTLET_REF_2, $storeId);
+        $outlet2ReferenceCurrencies = $this->getValue(self::OUTLET_REF_2_CURRENCIES, $storeId) ?? '';
+        $outlet2ReferenceCurrencies = explode(',', $outlet2ReferenceCurrencies);
+
+        $trueOutletReference = $this->getOutletReferenceId($storeId);
+
+        if ($outlet2ReferenceId && in_array($currencyCode, $outlet2ReferenceCurrencies)) {
+            $trueOutletReference = $outlet2ReferenceId;
+        }
+
+        return $trueOutletReference;
     }
 
     /**
@@ -342,36 +403,6 @@ class Config extends \Magento\Payment\Gateway\Config\Config
         $endpoint = str_replace('//', '/', $endpoint);
 
         return $this->getApiUrl($storeId) . $endpoint;
-    }
-
-    /**
-     * Gets true outlet ID for order from Magento DB
-     *
-     * @param string $orderRef
-     * @param int|null $storeId
-     *
-     * @return string
-     */
-    private function getTrueOutletReferenceId(string $orderRef, ?int $storeId): string
-    {
-        $collection   = $this->coreFactory->create()->getCollection()->addFieldToFilter(
-            'reference',
-            $orderRef
-        );
-        $orderItem    = $collection->getFirstItem();
-        $currencyCode = $orderItem->getDataByKey('currency');
-
-        $outlet2ReferenceId         = $this->getValue(self::OUTLET_REF_2, $storeId);
-        $outlet2ReferenceCurrencies = $this->getValue(self::OUTLET_REF_2_CURRENCIES, $storeId) ?? '';
-        $outlet2ReferenceCurrencies = explode(',', $outlet2ReferenceCurrencies);
-
-        $trueOutletReference = $this->getOutletReferenceId($storeId);
-
-        if ($outlet2ReferenceId && in_array($currencyCode, $outlet2ReferenceCurrencies)) {
-            $trueOutletReference = $outlet2ReferenceId;
-        }
-
-        return $trueOutletReference;
     }
 
     /**

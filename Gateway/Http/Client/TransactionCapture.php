@@ -28,22 +28,25 @@ class TransactionCapture extends PaymentTransaction
             return null;
         } else {
             $transactionProcessor = new TransactionProcessor($responseArray);
-            $totalCapturedAmount = $transactionProcessor->getTotalCaptured();
-            $lastTransaction = $transactionProcessor->getLastCaptureTransaction();
-            $transactionId = $transactionProcessor->getTransactionId($lastTransaction);
+            $totalCapturedAmount  = $transactionProcessor->getTotalCaptured();
+            $lastTransaction      = $transactionProcessor->getLastCaptureTransaction();
+            $transactionId        = $transactionProcessor->getTransactionId($lastTransaction);
 
-            $currencyCode = $lastTransaction['amount']['currencyCode'] ?? '';
+            $currencyCode        = $lastTransaction['amount']['currencyCode'] ?? '';
             $totalCapturedAmount = ($totalCapturedAmount > 0) ? ValueFormatter::intToFloatRepresentation(
                 $currencyCode,
                 $totalCapturedAmount
             ) : 0;
 
-            $capturedAmount     = 0;
+            $capturedAmount = 0;
             if (isset($lastTransaction['state'])
                 && ($lastTransaction['state'] == 'SUCCESS')
                 && isset($lastTransaction['amount']['value'])
             ) {
-                $capturedAmount = ValueFormatter::intToFloatRepresentation($currencyCode, $transactionProcessor->getTransactionAmount($lastTransaction));
+                $capturedAmount = ValueFormatter::intToFloatRepresentation(
+                    $currencyCode,
+                    $transactionProcessor->getTransactionAmount($lastTransaction)
+                );
 
                 ValueFormatter::formatCurrencyDecimals($currencyCode, $capturedAmount);
             }
@@ -52,7 +55,7 @@ class TransactionCapture extends PaymentTransaction
                 'reference',
                 $responseArray['orderReference']
             );
-            $orderItem = $collection->getFirstItem();
+            $orderItem  = $collection->getFirstItem();
 
             $storeId = $this->storeManager->getStore()->getId();
 

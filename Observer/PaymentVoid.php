@@ -7,9 +7,8 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Invoice;
-use NetworkInternational\NGenius\Controller\NGeniusOnline\Payment;
-use Psr\Log\LoggerInterface;
 use NetworkInternational\NGenius\Model\CoreFactory;
+use Psr\Log\LoggerInterface;
 
 class PaymentVoid implements ObserverInterface
 {

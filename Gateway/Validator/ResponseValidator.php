@@ -2,9 +2,9 @@
 
 namespace NetworkInternational\NGenius\Gateway\Validator;
 
+use Magento\Payment\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Validator\AbstractValidator;
 use Magento\Payment\Gateway\Validator\ResultInterface;
-use Magento\Payment\Gateway\Helper\SubjectReader;
 
 /**
  * Validate and process NGenius payment response

@@ -5,8 +5,8 @@ namespace NetworkInternational\NGenius\Observer;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\Order;
-use NetworkInternational\NGenius\Model\CoreFactory;
 use NetworkInternational\NGenius\Gateway\Config\Config;
+use NetworkInternational\NGenius\Model\CoreFactory;
 
 class OrderShipped implements ObserverInterface
 {
