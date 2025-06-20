@@ -6,24 +6,20 @@ use Exception;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Payment\Gateway\Http\ClientInterface;
 use Magento\Payment\Gateway\Http\TransferInterface;
 use Magento\Payment\Model\Method\Logger;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use NetworkInternational\NGenius\Gateway\Config\Config;
+use NetworkInternational\NGenius\Model\CoreFactory;
 use NetworkInternational\NGenius\Setup\Patch\Data\DataPatch;
 use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 use Ngenius\NgeniusCommon\NgeniusHTTPCommon;
 use Ngenius\NgeniusCommon\NgeniusHTTPTransfer;
-use NetworkInternational\NGenius\Gateway\Config\Config;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Payment\Gateway\Http\ClientInterface;
-use NetworkInternational\NGenius\Model\CoreFactory;
-use Magento\Sales\Api\OrderRepositoryInterface;
 
 class PaymentTransaction implements ClientInterface
 {
-    /**
-     * @var Logger
-     */
-    private Logger $logger;
     /**
      * @var Session
      */
@@ -52,6 +48,10 @@ class PaymentTransaction implements ClientInterface
      * @var OrderRepositoryInterface
      */
     protected OrderRepositoryInterface $orderRepository;
+    /**
+     * @var Logger
+     */
+    private Logger $logger;
 
     /**
      * PaymentTransaction constructor.
@@ -117,18 +117,6 @@ class PaymentTransaction implements ClientInterface
     }
 
     /**
-     * Processing of API request body
-     *
-     * @param array $data
-     *
-     * @return string
-     */
-    protected function preProcess(array $data): string
-    {
-        return json_encode($data);
-    }
-
-    /**
      * Processing of API response
      *
      * @param string $responseEnc
@@ -167,5 +155,17 @@ class PaymentTransaction implements ClientInterface
         } else {
             return null;
         }
+    }
+
+    /**
+     * Processing of API request body
+     *
+     * @param array $data
+     *
+     * @return string
+     */
+    protected function preProcess(array $data): string
+    {
+        return json_encode($data);
     }
 }

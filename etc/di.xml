@@ -10,6 +10,15 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="ngeniusonline" xsi:type="object">
+                    NetworkInternational\NGenius\Model\Checkout\ConfigProvider
+                </item>
+            </argument>
+        </arguments>
+    </type>
 
     <!-- Payment Method Facade configuration -->
     <virtualType name="NGeniusFacade" type="Magento\Payment\Model\Method\Adapter">

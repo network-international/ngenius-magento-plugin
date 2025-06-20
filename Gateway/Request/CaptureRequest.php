@@ -2,18 +2,17 @@
 
 namespace NetworkInternational\NGenius\Gateway\Request;
 
-use Magento\Framework\Exception\CouldNotSaveException;
-use NetworkInternational\NGenius\Gateway\Config\Config;
-use Magento\Payment\Gateway\Request\BuilderInterface;
-use Magento\Framework\Exception\LocalizedException;
-use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Payment\Gateway\Helper\SubjectReader;
-use NetworkInternational\NGenius\Model\CoreFactory;
-use Magento\Payment\Helper\Formatter;
 use Laminas\Http\Request;
-use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Payment\Gateway\Request\BuilderInterface;
+use Magento\Payment\Helper\Formatter;
+use Magento\Store\Model\StoreManagerInterface;
+use NetworkInternational\NGenius\Gateway\Config\Config;
 use NetworkInternational\NGenius\Helper\Version;
+use NetworkInternational\NGenius\Model\CoreFactory;
+use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 
 /**
  * Request builder for payment captures
@@ -90,9 +89,9 @@ class CaptureRequest implements BuilderInterface
                                         ->addFieldToFilter('order_id', $order->getOrderIncrementId());
         $orderItem  = $collection->getFirstItem();
 
-        $formatPrice       = $this->formatPrice(SubjectReader::readAmount($buildSubject));
+        $formatPrice  = $this->formatPrice(SubjectReader::readAmount($buildSubject));
         $currencyCode = $orderItem->getCurrency();
-        $amount = ValueFormatter::floatToIntRepresentation($currencyCode, $formatPrice);
+        $amount       = ValueFormatter::floatToIntRepresentation($currencyCode, $formatPrice);
 
         if ($this->config->isComplete($storeId)) {
             return [

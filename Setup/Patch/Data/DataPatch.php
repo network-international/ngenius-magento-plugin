@@ -26,6 +26,16 @@ class DataPatch implements DataPatchInterface
     }
 
     /**
+     * Mark any dependencies here
+     *
+     * @return array|string[]
+     */
+    public static function getDependencies()
+    {
+        return [];
+    }
+
+    /**
      * Apply Data Patch for NGenius custom order statuses
      *
      * @return void
@@ -117,13 +127,13 @@ class DataPatch implements DataPatchInterface
     }
 
     /**
-     * Mark any dependencies here
+     * Function retrieving all custom NGenius statuses
      *
-     * @return array|string[]
+     * @return string[][]
      */
-    public static function getDependencies()
+    public static function getStatuses(): array
     {
-        return [];
+        return NgeniusOrderStatuses::magentoOrderStatuses();
     }
 
     /**
@@ -134,15 +144,5 @@ class DataPatch implements DataPatchInterface
     public function getAliases()
     {
         return [];
-    }
-
-    /**
-     * Function retrieving all custom NGenius statuses
-     *
-     * @return string[][]
-     */
-    public static function getStatuses(): array
-    {
-        return NgeniusOrderStatuses::magentoOrderStatuses();
     }
 }

@@ -5,14 +5,14 @@ namespace NetworkInternational\NGenius\Observer;
 use Exception;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Invoice;
-use Magento\Sales\Model\Order;
-use NetworkInternational\NGenius\Controller\NGeniusOnline\Payment;
-use Psr\Log\LoggerInterface;
-use NetworkInternational\NGenius\Model\CoreFactory;
-use NetworkInternational\NGenius\Gateway\Config\Config;
 use Magento\Store\Model\StoreManagerInterface;
+use NetworkInternational\NGenius\Controller\NGeniusOnline\Payment;
+use NetworkInternational\NGenius\Gateway\Config\Config;
+use NetworkInternational\NGenius\Model\CoreFactory;
+use Psr\Log\LoggerInterface;
 
 class PurchaseRefund implements ObserverInterface
 {

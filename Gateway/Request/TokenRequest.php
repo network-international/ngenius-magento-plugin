@@ -18,24 +18,21 @@ use Ngenius\NgeniusCommon\NgeniusHTTPTransfer;
 class TokenRequest
 {
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var Logger
-     */
-    private $logger;
-
-    /**
      * @var TransferFactory
      */
     protected $transferFactory;
-
     /**
      * @var ManagerInterface
      */
     protected $messageManager;
+    /**
+     * @var Config
+     */
+    private $config;
+    /**
+     * @var Logger
+     */
+    private $logger;
 
     /**
      * TokenRequest constructor.

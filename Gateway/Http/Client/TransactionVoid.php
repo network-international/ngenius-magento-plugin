@@ -7,13 +7,13 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Payment\Model\Method\Logger;
 use Magento\Sales\Api\Data\TransactionInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Payment\Transaction\Builder;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use NetworkInternational\NGenius\Gateway\Config\Config;
-use Magento\Sales\Model\Order\Payment\Transaction\Builder;
 use NetworkInternational\NGenius\Model\CoreFactory;
-use Magento\Sales\Api\OrderRepositoryInterface;
 
 /*
  * Class TransactionVoid

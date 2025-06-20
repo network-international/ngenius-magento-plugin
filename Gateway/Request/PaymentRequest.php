@@ -2,14 +2,14 @@
 
 namespace NetworkInternational\NGenius\Gateway\Request;
 
-use NetworkInternational\NGenius\Gateway\Config\Config;
-use Magento\Payment\Gateway\Request\BuilderInterface;
-use Magento\Framework\Exception\CouldNotSaveException;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Checkout\Model\Session;
-use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\UrlInterface;
+use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
+use Magento\Store\Model\StoreManagerInterface;
+use NetworkInternational\NGenius\Gateway\Config\Config;
 use NetworkInternational\NGenius\Helper\Version;
 use Ngenius\NgeniusCommon\Formatter\ValueFormatter;
 use Ngenius\NgeniusCommon\NgeniusUtilities;
@@ -78,10 +78,10 @@ class PaymentRequest implements BuilderInterface
     {
         $paymentDO = SubjectReader::readPayment($buildSubject);
         $paymentDO->getPayment()->setIsTransactionPending(true);
-        $order   = $paymentDO->getOrder();
-        $storeId = $order->getStoreId();
-        $formatPrice       = $this->formatPrice(SubjectReader::readAmount($buildSubject));
-        $amount = ValueFormatter::floatToIntRepresentation($order->getCurrencyCode(), $formatPrice);
+        $order       = $paymentDO->getOrder();
+        $storeId     = $order->getStoreId();
+        $formatPrice = $this->formatPrice(SubjectReader::readAmount($buildSubject));
+        $amount      = ValueFormatter::floatToIntRepresentation($order->getCurrencyCode(), $formatPrice);
 
         if ($this->config->isComplete($storeId)) {
             $this->setTableData($order);

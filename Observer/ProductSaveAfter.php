@@ -3,11 +3,11 @@
 namespace NetworkInternational\NGenius\Observer;
 
 use Magento\Catalog\Model\Product;
+use Magento\CatalogInventory\Api\StockManagementInterface;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\CatalogInventory\Api\StockManagementInterface;
-use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\ObjectManagerInterface;
 
 class ProductSaveAfter implements ObserverInterface
@@ -19,32 +19,27 @@ class ProductSaveAfter implements ObserverInterface
      * @var ObjectManagerInterface
      */
     protected $_objectManager;
-
-    /**
-     * @var CheckoutSession
-     */
-    private $checkoutSession;
-
     /**
      * @var ProductQty
      */
     protected $productQty;
-
     /**
      * @var StockManagementInterface
      */
     protected $stockManagement;
-
     /**
      * @var $stockRegistry
      */
     protected $stockRegistry;
-
     /**
      *
      * @var $productCollection
      */
     protected $productCollection;
+    /**
+     * @var CheckoutSession
+     */
+    private $checkoutSession;
 
     /**
      * @param ObjectManagerInterface $objectManager
@@ -81,8 +76,8 @@ class ProductSaveAfter implements ObserverInterface
     {
         $lastRealOrder = $this->checkoutSession->getLastRealOrder();
         if ($lastRealOrder->getPayment() && $lastRealOrder->getData('state') === 'new' && ($lastRealOrder->getData(
-                    'status'
-                ) === "payment_review")
+            'status'
+        ) === "payment_review")
         ) {
             $this->checkoutSession->restoreQuote();
 

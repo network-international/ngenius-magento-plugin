@@ -30,5 +30,8 @@
         <observer name="ngenius_shipped"
                   instance="NetworkInternational\NGenius\Observer\OrderShipped"/>
     </event>
+    <event name="sales_order_place_after">
+        <observer name="ngenius_order_created" instance="NetworkInternational\NGenius\Observer\NgeniusOrderCreated"/>
+    </event>
 </config>
 

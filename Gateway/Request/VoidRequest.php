@@ -2,13 +2,13 @@
 
 namespace NetworkInternational\NGenius\Gateway\Request;
 
-use NetworkInternational\NGenius\Gateway\Config\Config;
-use Magento\Payment\Gateway\Request\BuilderInterface;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Payment\Gateway\Helper\SubjectReader;
-use Magento\Payment\Helper\Formatter;
 use Laminas\Http\Request;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Payment\Gateway\Helper\SubjectReader;
+use Magento\Payment\Gateway\Request\BuilderInterface;
+use Magento\Payment\Helper\Formatter;
+use Magento\Store\Model\StoreManagerInterface;
+use NetworkInternational\NGenius\Gateway\Config\Config;
 
 class VoidRequest implements BuilderInterface
 {

@@ -18,7 +18,7 @@ our [documentation.](https://docs.ngenius-payments.com/docs/magento-245)
 - Use an FTP tool (such as *FileZilla*) to upload the contents of ```ngenius-magento-plugin-master``` directory to
   the ```app\code\NetworkInternational\NGenius\```directory of your Magento installation.
 - From the Magento root directory, install N-Genius dependencies
-  using ```composer require ngenius/ngenius-common:v1.0.12```.
+  using ```composer require ngenius/ngenius-common:v1.3.0```.
 
 ### Magento Build Steps
 

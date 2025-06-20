@@ -109,9 +109,9 @@ class RefundRequest implements BuilderInterface
         $token = $this->tokenRequest->getAccessToken($storeId);
         list($refund_url, $method, $error) = $this->getRefundUrl($token, $orderReference);
 
-        $formatPrice       = $this->formatPrice(SubjectReader::readAmount($buildSubject));
+        $formatPrice  = $this->formatPrice(SubjectReader::readAmount($buildSubject));
         $currencyCode = $order_details->getOrderCurrencyCode();
-        $amount = ValueFormatter::floatToIntRepresentation($currencyCode, $formatPrice);
+        $amount       = ValueFormatter::floatToIntRepresentation($currencyCode, $formatPrice);
 
         if ($error) {
             throw new LocalizedException(__($error));

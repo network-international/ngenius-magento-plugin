@@ -6,7 +6,9 @@ use Exception;
 use Magento\Catalog\Model\Product;
 use Magento\Checkout\Helper\Data;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Area;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\State;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\DB\TransactionFactory;
 use Magento\Framework\Message\ManagerInterface;
@@ -20,15 +22,14 @@ use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Model\Service\InvoiceService;
 use Magento\Store\Model\StoreManagerInterface;
+use NetworkInternational\NGenius\Controller\NGeniusOnline\Payment;
 use NetworkInternational\NGenius\Gateway\Config\Config;
 use NetworkInternational\NGenius\Gateway\Http\Client\TransactionFetch;
 use NetworkInternational\NGenius\Gateway\Http\TransferFactory;
 use NetworkInternational\NGenius\Gateway\Request\TokenRequest;
 use NetworkInternational\NGenius\Model\CoreFactory;
+use NetworkInternational\NGenius\Service\OrderStatusService;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\App\Area;
-use Magento\Framework\App\State;
-use NetworkInternational\NGenius\Controller\NGeniusOnline\Payment;
 
 /**
  * Cron Driver
@@ -75,6 +76,7 @@ class UpdateOrder
      * @param Builder $_transactionBuilder
      * @param OrderRepositoryInterface $orderRepository
      * @param State $state
+     * @param OrderStatusService $orderStatusService
      */
     public function __construct(
         ManagerInterface $messageManager,
@@ -100,7 +102,8 @@ class UpdateOrder
         SerializerInterface $serializer,
         Builder $_transactionBuilder,
         OrderRepositoryInterface $orderRepository,
-        State $state
+        State $state,
+        OrderStatusService $orderStatusService
     ) {
         $this->ngeniusPaymentTools = new Payment(
             $messageManager,
@@ -125,7 +128,8 @@ class UpdateOrder
             $productCollection,
             $serializer,
             $_transactionBuilder,
-            $orderRepository
+            $orderRepository,
+            $orderStatusService
         );
         $this->state               = $state;
         $this->logger              = $logger;

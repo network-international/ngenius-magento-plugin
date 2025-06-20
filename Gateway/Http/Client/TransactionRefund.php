@@ -34,22 +34,22 @@ class TransactionRefund extends PaymentTransaction
             );
         } else {
             $transactionProcessor = new TransactionProcessor($responseArray);
-            $collection = $this->coreFactory->create()
-                                            ->getCollection()
-                                            ->addFieldToFilter('reference', $responseArray['orderReference']);
+            $collection           = $this->coreFactory->create()
+                                                      ->getCollection()
+                                                      ->addFieldToFilter('reference', $responseArray['orderReference']);
 
             $orderItem = $collection->getFirstItem();
 
             $lastRefundTransaction = $transactionProcessor->getLastRefundTransaction();
-            $transactionId = $transactionProcessor->getTransactionID($lastRefundTransaction);
+            $transactionId         = $transactionProcessor->getTransactionID($lastRefundTransaction);
 
             $currencyCode = $orderItem->getData('currency');
 
-            $capturedAmount = ValueFormatter::intToFloatRepresentation(
+            $capturedAmount     = ValueFormatter::intToFloatRepresentation(
                 $currencyCode,
                 $transactionProcessor->getTotalCaptured()
             );
-            $totalRefunded = ValueFormatter::intToFloatRepresentation(
+            $totalRefunded      = ValueFormatter::intToFloatRepresentation(
                 $currencyCode,
                 $transactionProcessor->getTotalRefunded()
             );
