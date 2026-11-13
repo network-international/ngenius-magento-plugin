@@ -140,6 +140,10 @@ class PaymentRequest implements BuilderInterface
                         "networkinternational/ngeniusonline/payment"
                     ),
                     'skipConfirmationPage' => true,
+                    'cancelUrl'            => $this->urlBuilder->getDirectUrl(
+                        "networkinternational/ngeniusonline/cancel"
+                    ),
+                    'cancelText'           => (string)__('Continue Shopping'),
                 ],
                 'merchantOrderReference' => $order->getRealOrderId(),
                 'emailAddress'           => $order->getBillingAddress()->getEmail(),
