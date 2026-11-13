@@ -12,7 +12,7 @@ class Version
      *
      * @var string
      */
-    public const MODULE_VERSION = '1.4.1';
+    public const MODULE_VERSION = '1.4.2';
 
     /**
      * Retrieves the module version.

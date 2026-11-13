@@ -1,5 +1,12 @@
 # Changelog
 
+## [[1.4.2]](https://github.com/network-international/ngenius-magento-plugin/releases/tag/1.4.2)
+
+### Fixed
+
+- Continue Shopping link beneath the Pay button on the hosted payment page. The order request
+  now sends a cancel URL and the label 'Continue Shopping', so the link is displayed.
+
 ## [[1.4.1]](https://github.com/network-international/ngenius-magento-plugin/releases/tag/1.4.1)
 
 ### Fixed
